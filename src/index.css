@@ -195,10 +195,9 @@ button {
 
 /* Hero Section */
 .hero {
-  min-height: 100vh;
   display: flex;
   align-items: center;
-  padding-top: 80px; /* Offset for navbar */
+  padding: 56px 0;
   background: linear-gradient(135deg, rgba(26,26,46,0.03) 0%, rgba(233,30,99,0.03) 100%);
 }
 
@@ -359,5 +358,13 @@ button {
   
   .nav-links {
     display: none;
+  }
+
+  .hero {
+    padding: 36px 0;
+  }
+
+  .footer {
+    padding: 36px 0 24px;
   }
 }

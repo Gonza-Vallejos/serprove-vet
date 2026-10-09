@@ -331,7 +331,7 @@ function Landing({ settings }) {
       </section>
 
       {/* Capacitaciones Section */}
-      <section id="capacitaciones" className="section" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
+      <section id="capacitaciones" className="section" style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: isMobile ? '40px 0' : '80px 0' }}>
         <div className="container text-center">
           <h2 className="section-title" style={{ color: 'white' }}>{settings?.capacitaciones_title}</h2>
           <p className="section-subtitle" style={{ color: 'rgba(255,255,255,0.9)', maxWidth: '800px', margin: '0 auto 32px' }}>
