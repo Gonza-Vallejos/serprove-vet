@@ -25,12 +25,12 @@ function Catalog({ settings }) {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:3001/products')
+    fetch('/api/products')
       .then(res => res.json())
       .then(data => setProducts(data))
       .catch(err => console.error("Error fetching products:", err));
 
-    fetch('http://localhost:3001/categories')
+    fetch('/api/categories')
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error("Error fetching categories:", err));
