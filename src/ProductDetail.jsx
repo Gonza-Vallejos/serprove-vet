@@ -18,7 +18,15 @@ function ProductDetail({ settings }) {
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     // Fetch product
@@ -115,12 +123,12 @@ function ProductDetail({ settings }) {
       <Navbar settings={settings} />
 
       {/* Product Detail */}
-      <section style={{ padding: '60px 0' }}>
+      <section style={{ padding: isMobile ? '28px 0' : '60px 0' }}>
         <div className="container">
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr',
-            gap: '48px',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+            gap: isMobile ? '20px' : '48px',
             alignItems: 'start'
           }}>
             {/* Image */}
@@ -138,7 +146,7 @@ function ProductDetail({ settings }) {
                   style={{ 
                     width: '100%', 
                     height: 'auto',
-                    maxHeight: '500px',
+                    maxHeight: isMobile ? '280px' : '500px',
                     objectFit: 'cover'
                   }} 
                 />
@@ -157,9 +165,9 @@ function ProductDetail({ settings }) {
                     <span style={{ 
                       color: 'white', 
                       fontWeight: '700', 
-                      fontSize: '1.5rem',
+                      fontSize: isMobile ? '1.1rem' : '1.5rem',
                       backgroundColor: '#d32f2f',
-                      padding: '8px 24px',
+                      padding: isMobile ? '6px 18px' : '8px 24px',
                       borderRadius: '8px'
                     }}>AGOTADO</span>
                   </div>
@@ -167,14 +175,14 @@ function ProductDetail({ settings }) {
                 {featuredBadge && (
                   <span style={{
                     position: 'absolute',
-                    top: '16px',
-                    right: '16px',
+                    top: isMobile ? '10px' : '16px',
+                    right: isMobile ? '10px' : '16px',
                     backgroundColor: featuredBadge.bg,
                     color: featuredBadge.bg === '#FFC107' ? '#333' : 'white',
-                    padding: '8px 16px',
+                    padding: isMobile ? '5px 12px' : '8px 16px',
                     borderRadius: '20px',
                     fontWeight: '600',
-                    fontSize: '0.9rem'
+                    fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}>
                     {featuredBadge.label}
                   </span>
@@ -184,13 +192,13 @@ function ProductDetail({ settings }) {
 
             {/* Info */}
             <div>
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: isMobile ? '10px' : '16px' }}>
                 <span className="badge" style={{ margin: 0 }}>{product.category}</span>
               </div>
               
               <h1 style={{ 
-                fontSize: '2.5rem', 
-                marginBottom: '16px',
+                fontSize: isMobile ? '1.5rem' : '2.5rem', 
+                marginBottom: isMobile ? '10px' : '16px',
                 fontFamily: 'var(--font-heading)'
               }}>
                 {product.name}
@@ -198,10 +206,10 @@ function ProductDetail({ settings }) {
 
               {/* Price */}
               <div style={{ 
-                fontSize: '2rem', 
+                fontSize: isMobile ? '1.5rem' : '2rem', 
                 fontWeight: '700', 
                 color: 'var(--color-primary)',
-                marginBottom: '24px'
+                marginBottom: isMobile ? '16px' : '24px'
               }}>
                 {product.price ? `$${Number(product.price).toLocaleString('es-AR')}` : 'Consultar precio'}
               </div>
@@ -211,10 +219,11 @@ function ProductDetail({ settings }) {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '8px',
-                marginBottom: '24px',
-                padding: '12px 16px',
+                marginBottom: isMobile ? '16px' : '24px',
+                padding: isMobile ? '10px 12px' : '12px 16px',
                 borderRadius: 'var(--radius-sm)',
-                backgroundColor: product.stock === 0 ? '#ffebee' : product.stock <= 5 ? '#fff3e0' : '#e8f5e9'
+                backgroundColor: product.stock === 0 ? '#ffebee' : product.stock <= 5 ? '#fff3e0' : '#e8f5e9',
+                flexWrap: 'wrap'
               }}>
                 {product.stock === 0 ? (
                   <>
@@ -235,12 +244,12 @@ function ProductDetail({ settings }) {
               </div>
 
               {/* Description */}
-              <div style={{ marginBottom: '32px' }}>
-                <h3 style={{ marginBottom: '12px', fontSize: '1.1rem' }}>Descripción</h3>
+              <div style={{ marginBottom: isMobile ? '20px' : '32px' }}>
+                <h3 style={{ marginBottom: '8px', fontSize: isMobile ? '1rem' : '1.1rem' }}>Descripción</h3>
                 <p style={{ 
                   color: 'var(--color-text-light)', 
-                  lineHeight: '1.8',
-                  fontSize: '1.05rem'
+                  lineHeight: '1.7',
+                  fontSize: isMobile ? '0.95rem' : '1.05rem'
                 }}>
                   {product.description}
                 </p>
@@ -250,40 +259,40 @@ function ProductDetail({ settings }) {
               <div style={{ 
                 display: 'flex', 
                 flexDirection: 'column',
-                gap: '12px',
-                marginBottom: '32px',
-                padding: '20px',
+                gap: isMobile ? '8px' : '12px',
+                marginBottom: isMobile ? '20px' : '32px',
+                padding: isMobile ? '14px' : '20px',
                 backgroundColor: 'white',
                 borderRadius: 'var(--radius-md)',
                 boxShadow: 'var(--shadow-sm)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Factory size={20} style={{ color: 'var(--color-primary)' }} />
-                  <span style={{ fontWeight: '500' }}>Laboratorio:</span>
-                  <span style={{ color: 'var(--color-text-light)' }}>{product.laboratorio}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Factory size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+                  <span style={{ fontWeight: '500', fontSize: '0.9rem' }}>Laboratorio:</span>
+                  <span style={{ color: 'var(--color-text-light)', fontSize: '0.9rem' }}>{product.laboratorio}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Package size={20} style={{ color: 'var(--color-primary)' }} />
-                  <span style={{ fontWeight: '500' }}>Categoría:</span>
-                  <span style={{ color: 'var(--color-text-light)' }}>{product.category}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Package size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+                  <span style={{ fontWeight: '500', fontSize: '0.9rem' }}>Categoría:</span>
+                  <span style={{ color: 'var(--color-text-light)', fontSize: '0.9rem' }}>{product.category}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Tag size={20} style={{ color: 'var(--color-primary)' }} />
-                  <span style={{ fontWeight: '500' }}>Código:</span>
-                  <span style={{ color: 'var(--color-text-light)' }}>#{product.id}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Tag size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+                  <span style={{ fontWeight: '500', fontSize: '0.9rem' }}>Código:</span>
+                  <span style={{ color: 'var(--color-text-light)', fontSize: '0.9rem' }}>#{product.id}</span>
                 </div>
               </div>
 
               {/* Actions */}
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '24px' }}>
+              <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', flexWrap: 'wrap', marginTop: isMobile ? '16px' : '24px' }}>
                 {product.stock > 0 ? (
                   settings?.show_cart !== false ? (
                     <button 
                       onClick={handleAddToCart}
                       className="btn btn-primary"
                       style={{ 
-                        padding: '12px 24px',
-                        fontSize: '1rem',
+                        padding: isMobile ? '10px 16px' : '12px 24px',
+                        fontSize: isMobile ? '0.9rem' : '1rem',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
@@ -300,8 +309,8 @@ function ProductDetail({ settings }) {
                       rel="noreferrer" 
                       className="btn btn-primary"
                       style={{ 
-                        padding: '12px 24px',
-                        fontSize: '1rem',
+                        padding: isMobile ? '10px 16px' : '12px 24px',
+                        fontSize: isMobile ? '0.9rem' : '1rem',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px'
@@ -315,8 +324,8 @@ function ProductDetail({ settings }) {
                     disabled 
                     className="btn"
                     style={{ 
-                      padding: '12px 24px',
-                      fontSize: '1rem',
+                      padding: isMobile ? '10px 16px' : '12px 24px',
+                      fontSize: isMobile ? '0.9rem' : '1rem',
                       backgroundColor: '#e0e0e0',
                       color: '#9e9e9e',
                       cursor: 'not-allowed'
@@ -331,8 +340,8 @@ function ProductDetail({ settings }) {
                   rel="noreferrer" 
                   className="btn btn-outline"
                   style={{ 
-                    padding: '12px 24px',
-                    fontSize: '1rem',
+                    padding: isMobile ? '10px 16px' : '12px 24px',
+                    fontSize: isMobile ? '0.9rem' : '1rem',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px'
@@ -348,9 +357,9 @@ function ProductDetail({ settings }) {
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <section style={{ padding: '60px 0', backgroundColor: 'white' }}>
+        <section style={{ padding: isMobile ? '32px 0' : '60px 0', backgroundColor: 'white' }}>
           <div className="container">
-            <h2 style={{ marginBottom: '32px', textAlign: 'center' }}>Productos Relacionados</h2>
+            <h2 style={{ marginBottom: isMobile ? '20px' : '32px', textAlign: 'center', fontSize: isMobile ? '1.4rem' : undefined }}>Productos Relacionados</h2>
             <div className="product-grid">
               {relatedProducts.map(relProduct => (
                 <div 

@@ -360,6 +360,10 @@ button {
     display: none;
   }
 
+  .container {
+    padding: 0 16px;
+  }
+
   .hero {
     padding: 36px 0;
   }
