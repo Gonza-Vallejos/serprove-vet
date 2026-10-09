@@ -1,0 +1,318 @@
+{
+  "categories": [
+    {
+      "id": "1",
+      "name": "Farmacológicos"
+    },
+    {
+      "id": "2",
+      "name": "Nutrición"
+    },
+    {
+      "id": "3",
+      "name": "Higiene y Cosmética"
+    },
+    {
+      "id": "4",
+      "name": "Accesorios Clínicos"
+    },
+    {
+      "id": "5",
+      "name": "Equipamiento"
+    }
+  ],
+  "products": [
+    {
+      "id": "1",
+      "name": "Cidar Anti-Pulgas",
+      "description": "60 días de protección en una sola toma para perros de todas las razas. Antiparasitario interno de última generación.",
+      "category": "Farmacológicos",
+      "laboratorio": "VetMax",
+      "price": "8500",
+      "stock": 3,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "2",
+      "name": "Flura Max",
+      "description": "Protección de 90 días en un solo comprimido, acción rápida. Ideal para perros activos.",
+      "category": "Farmacológicos",
+      "laboratorio": "BioVet",
+      "price": "12800",
+      "stock": 25,
+      "featured": "nuevo",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "3",
+      "name": "Suplemento Articular Plus",
+      "description": "Ideal para el desarrollo y fortalecimiento articular en razas grandes. Con glucosamina y condroitina.",
+      "category": "Nutrición",
+      "laboratorio": "VetNatura",
+      "price": "15600",
+      "stock": 0,
+      "featured": "popular",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "4",
+      "name": "Shampoo Hipoalergénico Derma",
+      "description": "Cuidado dermatológico especializado para pieles sensibles. Fórmula suave sin parfum.",
+      "category": "Higiene y Cosmética",
+      "laboratorio": "DermaPet",
+      "price": "6200",
+      "stock": 15,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "5",
+      "name": "NexGard Antiparasitario",
+      "description": "Tableta masticable para perros. Efectiva contra pulgas y garrapatas por 30 días.",
+      "category": "Farmacológicos",
+      "laboratorio": "Boehringer",
+      "price": "18500",
+      "stock": 8,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "6",
+      "name": "Bravecto Trimestral",
+      "description": "Protección trimestral. Mata pulgas y garrapatas con una sola dosis.",
+      "category": "Farmacológicos",
+      "laboratorio": "Merck",
+      "price": "22900",
+      "stock": 12,
+      "featured": "nuevo",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "7",
+      "name": "Probiodigest Pro",
+      "description": "Suplemento probiótico para perros y gatos. Mejora la salud intestinal y digestión.",
+      "category": "Nutrición",
+      "laboratorio": "BioGen",
+      "price": "7800",
+      "stock": 20,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "8",
+      "name": "Osteofort Equino",
+      "description": "Suplemento alimenticio para caballos atletas. Mejora el rendimiento y recuperación muscular.",
+      "category": "Nutrición",
+      "laboratorio": "Equisalud",
+      "price": "12500",
+      "stock": 15,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "9",
+      "name": "Dermobiotex Shampoo",
+      "description": "Shampoo antimicrobiano para perros y gatos. Trata infecciones cutáneas leves.",
+      "category": "Higiene y Cosmética",
+      "laboratorio": "VetPharma",
+      "price": "6800",
+      "stock": 22,
+      "featured": "oferta",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "10",
+      "name": "Exspot Ectoparasiticida",
+      "description": "Spot-on para perros y gatos. Eficaz contra pulgas, garrapatas y ácaros.",
+      "category": "Farmacológicos",
+      "laboratorio": "VetCenter",
+      "price": "9500",
+      "stock": 30,
+      "featured": "oferta",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "11",
+      "name": "Seringa Desechable 5ml",
+      "description": "Jeringa estéril descartable para aplicación de medicamentos. Paquete x 100 unidades.",
+      "category": "Accesorios Clínicos",
+      "laboratorio": "Terumo",
+      "price": "2500",
+      "stock": 150,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "12",
+      "name": "Termómetro Digital Vet",
+      "description": "Termómetro de rápido lecturas para animales. Precisión clínica en 10 segundos.",
+      "category": "Accesorios Clínicos",
+      "laboratorio": "Omron",
+      "price": "8500",
+      "stock": 18,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "13",
+      "name": "Bisturí Quirúrgico #22",
+      "description": "Hoja de bisturí estéril desechable. Acero quirúrgico de alta calidad. Paquete x 10.",
+      "category": "Accesorios Clínicos",
+      "laboratorio": "Swann-Morton",
+      "price": "3200",
+      "stock": 80,
+      "featured": "oferta",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "14",
+      "name": "Collar Isabelino Vet",
+      "description": "Collar de protección post-operatoria. Ajustable para perros y gatos medianos.",
+      "category": "Accesorios Clínicos",
+      "laboratorio": "VetSoft",
+      "price": "1800",
+      "stock": 45,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "15",
+      "name": "Guantes Latex Quirúrgicos",
+      "description": "Guantes de látex estériles para procedimientos. Talle M. Caja x 100.",
+      "category": "Accesorios Clínicos",
+      "laboratorio": "Ansell",
+      "price": "4500",
+      "stock": 60,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "16",
+      "name": "Mesa Examinación Ajustable",
+      "description": "Mesa de examinación profesional con altura regulable. Acero inoxidable.",
+      "category": "Equipamiento",
+      "laboratorio": "VetEquip",
+      "price": "185000",
+      "stock": 2,
+      "featured": "popular",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "17",
+      "name": "Otoscopio Veterinario",
+      "description": "Instrumento para exploración de oído. LED de alta intensidad con bombillo de repuesto.",
+      "category": "Equipamiento",
+      "laboratorio": "Heine",
+      "price": "42000",
+      "stock": 5,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "18",
+      "name": "Báscula Digital Pet",
+      "description": "Báscula para perros y gatos pequeños. Capacidad 20kg, precisión 1g.",
+      "category": "Equipamiento",
+      "laboratorio": "Tanita",
+      "price": "12500",
+      "stock": 12,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "19",
+      "name": "Kit Nebulizador Vet",
+      "description": "Sistema de nebulización para tratamientos respiratorios. Incluye máscara sizes S-M-L.",
+      "category": "Equipamiento",
+      "laboratorio": "MediVent",
+      "price": "65000",
+      "stock": 3,
+      "featured": "nuevo",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "20",
+      "name": "Cepillo Deslanador Pro",
+      "description": "Cepillo profesional para deshacer nudos y pelaje muerto. Ergonómico.",
+      "category": "Higiene y Cosmética",
+      "laboratorio": "GroomPro",
+      "price": "4500",
+      "stock": 35,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "21",
+      "name": "Shampoo Medicado Sebolytic",
+      "description": "Tratamiento para dermatitis seborreica. Vehiculiza principios activos al folículo.",
+      "category": "Higiene y Cosmética",
+      "laboratorio": "Virbac",
+      "price": "8900",
+      "stock": 14,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "22",
+      "name": "Collar Antiparasitario Seresto",
+      "description": "Collar de larga duración (8 meses). Protege contra pulgas y garrapatas.",
+      "category": "Farmacológicos",
+      "laboratorio": "Bayer",
+      "price": "28000",
+      "stock": 10,
+      "featured": "popular",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "23",
+      "name": "Vitaminas Complejo B Inyectable",
+      "description": "Suplemento vitamínico B complejo. Para estados de debilidad y recuperación.",
+      "category": "Nutrición",
+      "laboratorio": "Konig",
+      "price": "5500",
+      "stock": 40,
+      "featured": "none",
+      "image": "/product.jpg"
+    },
+    {
+      "id": "24",
+      "name": "Electrolitos Equinos",
+      "description": "Repositor de electrolitos para caballos. Previene deshidratación en esfuerzo.",
+      "category": "Nutrición",
+      "laboratorio": "EquiAir",
+      "price": "7200",
+      "stock": 25,
+      "featured": "none",
+      "image": "/product.jpg"
+    }
+  ],
+  "settings": {
+    "global_primaryColor": "#E91E63",
+    "global_whatsappPhone": "3777238159",
+    "contact_email": "contacto@serprove.com",
+    "contact_phone": "3777238159",
+    "contact_address": "Corrientes, Argentina",
+    "contact_schedule": "Lunes a Viernes: 8:00 - 18:00 | Sábados: 8:00 - 12:00",
+    "social_instagram": "https://instagram.com/serprove",
+    "social_facebook": "https://facebook.com/serprove",
+    "social_twitter": "",
+    "inicio_title": "Soluciones integrales para veterinarias y petshops",
+    "inicio_subtitle": "Juntos, cuidando y construyendo el bienestar animal con atención personalizada y los mejores laboratorios del mercado.",
+    "inicio_image": "/hero.jpg",
+    "banner_title": "¡Ofertas Especiales!",
+    "banner_subtitle": "Hasta 30% de descuento en productos seleccionados",
+    "banner_image": "/hero.jpg",
+    "banner_active": true,
+    "nosotros_title": "Construyendo el Bienestar Animal",
+    "nosotros_text": "Brindamos asesoramiento, capacitación continua (jornadas teóricas) y los mejores productos de la industria para que tu clínica veterinaria o petshop ofrezca un servicio de excelencia.",
+    "catalogo_title": "Nuestro Catálogo",
+    "catalogo_subtitle": "Explora nuestras líneas de productos y laboratorios destacados.",
+    "capacitaciones_title": "Capacitación Continua",
+    "capacitaciones_text": "Organizamos jornadas teóricas y abordajes prácticos para mantener a tu equipo actualizado con las últimas novedades en medicina veterinaria.",
+    "coverage_provinces": "Chaco, Corrientes, Misiones, Formosa,santa fe",
+    "show_prices": true,
+    "show_stock": true,
+    "show_cart": true
+  }
+}
