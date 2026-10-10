@@ -1,0 +1,32 @@
+name: Vercel Deployment Notification
+
+on:
+  deployment_status:
+
+jobs:
+  notify_slack:
+    runs-on: ubuntu-latest
+    # Solo nos importa notificar cuando termina (éxito o error)
+    if: github.event.deployment_status.state == 'success' || github.event.deployment_status.state == 'failure'
+    steps:
+      - name: Send Slack Notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          STATE: ${{ github.event.deployment_status.state }}
+          TARGET: ${{ github.event.deployment_status.environment }}
+          URL: ${{ github.event.deployment_status.target_url }}
+        run: |
+          if [ "$STATE" = "success" ]; then
+            ICON="✅"
+            MSG="*¡Despliegue exitoso en Vercel!*"
+          else
+            ICON="❌"
+            MSG="*Error en el despliegue de Vercel.*"
+          fi
+          
+          SLACK_MESSAGE="$ICON $MSG
+          🌐 *Entorno:* $TARGET
+          🔗 *URL:* $URL"
+          
+          PAYLOAD=$(jq -n --arg text "$SLACK_MESSAGE" '{text: $text}')
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
