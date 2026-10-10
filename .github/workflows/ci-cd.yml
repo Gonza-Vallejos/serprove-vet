@@ -15,9 +15,12 @@ jobs:
       - name: Notify Slack - Inicio
         if: env.SLACK_WEBHOOK_URL != ''
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"🚀 *Flujo Iniciado:* Construyendo y validando cambios de la rama `dev` en serprove-vet..."}' \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
+          PAYLOAD=$(jq -n \
+            --arg text "🚀 *Flujo Iniciado:* Construyendo y validando cambios de la rama \`dev\` en serprove-vet...
+👤 *Autor:* ${{ github.actor }}
+📝 *Commit:* ${{ github.event.head_commit.message }}" \
+            '{text: $text}')
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
@@ -52,17 +55,23 @@ jobs:
       - name: Notify Slack - Éxito
         if: success() && env.SLACK_WEBHOOK_URL != ''
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"✅ *Construcción Exitosa:* Los cambios de `dev` fueron aprobados y pasados a la rama `main` de serprove-vet."}' \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
+          PAYLOAD=$(jq -n \
+            --arg text "✅ *Construcción Exitosa:* Los cambios de \`dev\` fueron aprobados y pasados a la rama \`main\`.
+👤 *Autor:* ${{ github.actor }}
+📝 *Commit:* ${{ github.event.head_commit.message }}" \
+            '{text: $text}')
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Notify Slack - Fallo
         if: failure() && env.SLACK_WEBHOOK_URL != ''
         run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"❌ *Error en la construcción:* Algo falló en la rama `dev`. No se pasaron los cambios a `main`."}' \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
+          PAYLOAD=$(jq -n \
+            --arg text "❌ *Error en la construcción:* Algo falló en la rama \`dev\`. No se pasaron los cambios a \`main\`.
+👤 *Autor:* ${{ github.actor }}
+📝 *Commit:* ${{ github.event.head_commit.message }}" \
+            '{text: $text}')
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
