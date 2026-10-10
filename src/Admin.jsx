@@ -127,7 +127,7 @@ function Admin() {
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     try {
-      const { error } = await supabase.from('settings').upsert({ id: 1, ...settings });
+      const { error } = await supabase.from('settings').update(settings).eq('id', 1);
       if (error) throw error;
       toast.success('Configuración guardada correctamente');
     } catch (err) {
