@@ -4,6 +4,7 @@ import { ShoppingBag, Package, Tag, Factory, CheckCircle2, Plus } from 'lucide-r
 import { useCart } from './context/CartContext';
 import Navbar from './components/Navbar';
 import { toast } from 'sonner';
+import { supabase } from './supabaseClient';
 
 // WhatsApp Icon SVG component
 const WhatsAppIcon = ({ size = 24 }) => (
