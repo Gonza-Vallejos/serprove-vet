@@ -30,6 +30,7 @@ function Catalog({ settings }) {
       .then(data => setProducts(data))
       .catch(err => console.error("Error fetching products:", err));
 
+
     fetch('/api/categories')
       .then(res => res.json())
       .then(data => setCategories(data))
@@ -197,7 +198,7 @@ function Catalog({ settings }) {
                   color: '#666'
                 }}>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                    <path d="M2 4l4 4 4-4" stroke="#666" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 4l4 4 4-4" stroke="#666" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
               </div>
@@ -221,146 +222,146 @@ function Catalog({ settings }) {
                 {filteredProducts
                   .slice((currentPage - 1) * PRODUCTS_PER_PAGE, currentPage * PRODUCTS_PER_PAGE)
                   .map(product => (
-                  <div
-                    key={product.id}
-                    onClick={() => navigate(`/product/${product.id}`)}
-                    style={{
-                      background: 'white',
-                      borderRadius: '12px',
-                      padding: '16px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                      border: '1px solid rgba(0,0,0,0.05)',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                  >
-                    {/* Image */}
-                    <div style={{
-                      width: '100%',
-                      height: '160px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '8px',
-                      marginBottom: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      overflow: 'hidden',
-                      position: 'relative'
-                    }}>
-                      <img
-                        src={product.image || '/product.jpg'}
-                        alt={product.name}
-                        style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }}
-                      />
-                      {product.stock === 0 && (
-                        <div style={{
-                          position: 'absolute',
-                          top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: 'rgba(0,0,0,0.6)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <span style={{ color: 'white', fontWeight: '700', fontSize: '0.8rem', backgroundColor: '#d32f2f', padding: '4px 10px', borderRadius: '4px' }}>AGOTADO</span>
-                        </div>
-                      )}
-                      {product.featured && product.featured !== 'none' && (
-                        <span style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                          padding: '3px 8px',
-                          borderRadius: '10px',
-                          fontSize: '0.7rem',
-                          fontWeight: '600',
-                          backgroundColor: product.featured === 'oferta' ? '#FF5722' : product.featured === 'nuevo' ? '#4CAF50' : '#FFC107',
-                          color: product.featured === 'popular' ? '#333' : 'white'
-                        }}>
-                          {product.featured === 'nuevo' && '🏆 Nuevo'}
-                          {product.featured === 'oferta' && '🔥 Oferta'}
-                          {product.featured === 'popular' && '⭐ Popular'}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Category badge */}
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '3px 10px',
-                      borderRadius: '12px',
-                      fontSize: '0.7rem',
-                      fontWeight: '600',
-                      backgroundColor: 'rgba(233, 30, 99, 0.1)',
-                      color: 'var(--color-primary)',
-                      marginBottom: '8px',
-                      alignSelf: 'flex-start'
-                    }}>
-                      {product.category}
-                    </span>
-
-                    <h3 style={{ fontSize: '0.95rem', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
-                      {product.name}
-                    </h3>
-                    <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '12px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {product.description}
-                    </p>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #f0f0f0' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        {settings?.show_prices !== false && (
-                          <span style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--color-primary)' }}>
-                            {product.price ? `$${Number(product.price).toLocaleString('es-AR')}` : 'Consultar'}
-                          </span>
+                    <div
+                      key={product.id}
+                      onClick={() => navigate(`/product/${product.id}`)}
+                      style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        border: '1px solid rgba(0,0,0,0.05)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
+                    >
+                      {/* Image */}
+                      <div style={{
+                        width: '100%',
+                        height: '160px',
+                        backgroundColor: '#f5f5f5',
+                        borderRadius: '8px',
+                        marginBottom: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        position: 'relative'
+                      }}>
+                        <img
+                          src={product.image || '/product.jpg'}
+                          alt={product.name}
+                          style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }}
+                        />
+                        {product.stock === 0 && (
+                          <div style={{
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(0,0,0,0.6)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            <span style={{ color: 'white', fontWeight: '700', fontSize: '0.8rem', backgroundColor: '#d32f2f', padding: '4px 10px', borderRadius: '4px' }}>AGOTADO</span>
+                          </div>
                         )}
-                        {settings?.show_stock !== false && (
-                          <span style={{ fontSize: '0.75rem', color: product.stock === 0 ? '#dc2626' : '#888' }}>
-                            {product.stock === 0 ? 'Sin stock' : `${product.stock} disponibles`}
+                        {product.featured && product.featured !== 'none' && (
+                          <span style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            padding: '3px 8px',
+                            borderRadius: '10px',
+                            fontSize: '0.7rem',
+                            fontWeight: '600',
+                            backgroundColor: product.featured === 'oferta' ? '#FF5722' : product.featured === 'nuevo' ? '#4CAF50' : '#FFC107',
+                            color: product.featured === 'popular' ? '#333' : 'white'
+                          }}>
+                            {product.featured === 'nuevo' && '🏆 Nuevo'}
+                            {product.featured === 'oferta' && '🔥 Oferta'}
+                            {product.featured === 'popular' && '⭐ Popular'}
                           </span>
                         )}
                       </div>
-                      {settings?.show_cart !== false ? (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                          disabled={product.stock === 0}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            background: product.stock === 0 ? '#ccc' : '#25D366',
-                            color: 'white',
-                            cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
-                            fontSize: '0.8rem',
-                            fontWeight: '600',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          <Plus size={14} />
-                          {product.stock === 0 ? 'Sin Stock' : 'Agregar'}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); if (product.stock > 0) window.open(whatsappLink, '_blank'); }}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            border: product.stock === 0 ? '1px solid #ddd' : 'none',
-                            background: product.stock === 0 ? '#f5f5f5' : 'var(--color-primary)',
-                            color: product.stock === 0 ? '#999' : 'white',
-                            cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
-                            fontSize: '0.8rem',
-                            fontWeight: '500'
-                          }}
-                        >
-                          {product.stock === 0 ? 'Sin Stock' : 'Comprar'}
-                        </button>
-                      )}
+
+                      {/* Category badge */}
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '3px 10px',
+                        borderRadius: '12px',
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        backgroundColor: 'rgba(233, 30, 99, 0.1)',
+                        color: 'var(--color-primary)',
+                        marginBottom: '8px',
+                        alignSelf: 'flex-start'
+                      }}>
+                        {product.category}
+                      </span>
+
+                      <h3 style={{ fontSize: '0.95rem', marginBottom: '6px', fontWeight: '600', color: '#333' }}>
+                        {product.name}
+                      </h3>
+                      <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '12px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {product.description}
+                      </p>
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #f0f0f0' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {settings?.show_prices !== false && (
+                            <span style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                              {product.price ? `$${Number(product.price).toLocaleString('es-AR')}` : 'Consultar'}
+                            </span>
+                          )}
+                          {settings?.show_stock !== false && (
+                            <span style={{ fontSize: '0.75rem', color: product.stock === 0 ? '#dc2626' : '#888' }}>
+                              {product.stock === 0 ? 'Sin stock' : `${product.stock} disponibles`}
+                            </span>
+                          )}
+                        </div>
+                        {settings?.show_cart !== false ? (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                            disabled={product.stock === 0}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              background: product.stock === 0 ? '#ccc' : '#25D366',
+                              color: 'white',
+                              cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
+                              fontSize: '0.8rem',
+                              fontWeight: '600',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <Plus size={14} />
+                            {product.stock === 0 ? 'Sin Stock' : 'Agregar'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); if (product.stock > 0) window.open(whatsappLink, '_blank'); }}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              border: product.stock === 0 ? '1px solid #ddd' : 'none',
+                              background: product.stock === 0 ? '#f5f5f5' : 'var(--color-primary)',
+                              color: product.stock === 0 ? '#999' : 'white',
+                              cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
+                              fontSize: '0.8rem',
+                              fontWeight: '500'
+                            }}
+                          >
+                            {product.stock === 0 ? 'Sin Stock' : 'Comprar'}
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
 
               {/* Pagination */}
@@ -451,17 +452,17 @@ function Catalog({ settings }) {
               <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
                 {settings?.social_instagram && (
                   <a href={settings.social_instagram} target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.7)', transition: 'color 0.2s' }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
                   </a>
                 )}
                 {settings?.social_facebook && (
                   <a href={settings.social_facebook} target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.7)', transition: 'color 0.2s' }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
                   </a>
                 )}
                 {settings?.social_twitter && (
                   <a href={settings.social_twitter} target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.7)', transition: 'color 0.2s' }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
                   </a>
                 )}
               </div>
