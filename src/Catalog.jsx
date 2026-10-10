@@ -16,7 +16,7 @@ function Catalog({ settings }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortOrder, setSortOrder] = useState('default');
   const [currentPage, setCurrentPage] = useState(1);
-  const { addToCart } = useCart();
+  const { cart, addToCart } = useCart();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -60,8 +60,14 @@ function Catalog({ settings }) {
       toast.error('Este producto está agotado');
       return;
     }
+    
+    const currentInCart = cart.find(item => item.id === product.id)?.quantity || 0;
+    if (currentInCart >= product.stock) {
+      toast.error(`No hay más stock disponible. Límite: ${product.stock}`);
+      return;
+    }
+    
     addToCart(product);
-    toast.success(`${product.name} agregado al carrito`);
   };
 
   const availableProducts = products.filter(p => p.stock > 0);

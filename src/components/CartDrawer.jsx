@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { X, Plus, Minus, Trash2, ShoppingBag, Send } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function CartDrawer({ settings, isMobile }) {
   const { cart, cartCount, cartTotal, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart, clearCart } = useCart();
@@ -175,7 +176,13 @@ export default function CartDrawer({ settings, isMobile }) {
                 {item.quantity}
               </span>
               <button
-                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                onClick={() => {
+                  if (item.quantity >= item.stock) {
+                    toast.error(`Stock máximo alcanzado (${item.stock})`);
+                    return;
+                  }
+                  updateQuantity(item.id, item.quantity + 1);
+                }}
                 aria-label="Sumar"
                 style={{
                   width: '28px',

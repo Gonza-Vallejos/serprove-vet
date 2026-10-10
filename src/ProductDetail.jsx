@@ -19,7 +19,7 @@ function ProductDetail({ settings }) {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const { addToCart } = useCart();
+  const { cart, addToCart } = useCart();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -60,8 +60,14 @@ function ProductDetail({ settings }) {
       toast.error('Este producto está agotado');
       return;
     }
+
+    const currentInCart = cart.find(item => item.id === product.id)?.quantity || 0;
+    if (currentInCart >= product.stock) {
+      toast.error(`No hay más stock disponible. Límite: ${product.stock}`);
+      return;
+    }
+
     addToCart(product);
-    toast.success(`${product.name} agregado al carrito`);
   };
 
   const whatsappLink = settings?.global_whatsappPhone 
