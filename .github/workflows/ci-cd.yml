@@ -14,15 +14,15 @@ jobs:
     steps:
       - name: Notify Slack - Inicio
         if: env.SLACK_WEBHOOK_URL != ''
-        run: |
-          PAYLOAD=$(jq -n \
-            --arg text "🚀 *Flujo Iniciado:* Construyendo y validando cambios de la rama \`dev\` en serprove-vet...
-👤 *Autor:* ${{ github.actor }}
-📝 *Commit:* ${{ github.event.head_commit.message }}" \
-            '{text: $text}')
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_MESSAGE: |
+            🚀 *Flujo Iniciado:* Construyendo y validando cambios de la rama `dev` en serprove-vet...
+            👤 *Autor:* ${{ github.actor }}
+            📝 *Commit:* ${{ github.event.head_commit.message }}
+        run: |
+          PAYLOAD=$(jq -n '{text: env.SLACK_MESSAGE}')
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
 
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -54,24 +54,24 @@ jobs:
 
       - name: Notify Slack - Éxito
         if: success() && env.SLACK_WEBHOOK_URL != ''
-        run: |
-          PAYLOAD=$(jq -n \
-            --arg text "✅ *Construcción Exitosa:* Los cambios de \`dev\` fueron aprobados y pasados a la rama \`main\`.
-👤 *Autor:* ${{ github.actor }}
-📝 *Commit:* ${{ github.event.head_commit.message }}" \
-            '{text: $text}')
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_MESSAGE: |
+            ✅ *Construcción Exitosa:* Los cambios de `dev` fueron aprobados y pasados a la rama `main`.
+            👤 *Autor:* ${{ github.actor }}
+            📝 *Commit:* ${{ github.event.head_commit.message }}
+        run: |
+          PAYLOAD=$(jq -n '{text: env.SLACK_MESSAGE}')
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
 
       - name: Notify Slack - Fallo
         if: failure() && env.SLACK_WEBHOOK_URL != ''
-        run: |
-          PAYLOAD=$(jq -n \
-            --arg text "❌ *Error en la construcción:* Algo falló en la rama \`dev\`. No se pasaron los cambios a \`main\`.
-👤 *Autor:* ${{ github.actor }}
-📝 *Commit:* ${{ github.event.head_commit.message }}" \
-            '{text: $text}')
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" ${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_MESSAGE: |
+            ❌ *Error en la construcción:* Algo falló en la rama `dev`. No se pasaron los cambios a `main`.
+            👤 *Autor:* ${{ github.actor }}
+            📝 *Commit:* ${{ github.event.head_commit.message }}
+        run: |
+          PAYLOAD=$(jq -n '{text: env.SLACK_MESSAGE}')
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
