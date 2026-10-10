@@ -29,23 +29,39 @@ function ProductDetail({ settings }) {
   }, []);
 
   useEffect(() => {
-    // Fetch product
-    fetch(`/api/products/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        setProduct(data);
-        // Fetch related products (same category)
-        return fetch('/api/products');
-      })
-      .then(res => res.json())
-      .then(products => {
-        const related = products.filter(p => 
-          p.category === product?.category && p.id !== product?.id
-        ).slice(0, 4);
-        setRelatedProducts(related);
-      })
-      .catch(err => console.error("Error fetching product:", err))
-      .finally(() => setIsLoading(false));
+    const fetchData = async () => {
+      try {
+        // Fetch product
+        const { data: productData, error: productError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
+          
+        if (productError) throw productError;
+        setProduct(productData);
+
+        // Fetch related products
+        if (productData?.category) {
+          const { data: relatedData, error: relatedError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('category', productData.category)
+            .neq('id', id)
+            .limit(4);
+            
+          if (!relatedError && relatedData) {
+            setRelatedProducts(relatedData);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching product:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
 
   }, [id]);
 
@@ -114,9 +130,9 @@ function ProductDetail({ settings }) {
   const getFeaturedBadge = (featured) => {
     if (!featured || featured === 'none') return null;
     const badges = {
-      nuevo: { bg: '#4CAF50', label: '🏆 Nuevo' },
-      oferta: { bg: '#FF5722', label: '🔥 Oferta' },
-      popular: { bg: '#FFC107', label: '⭐ Popular' }
+      nuevo: { bg: 'var(--color-new)', label: '🏆 Nuevo' },
+      oferta: { bg: 'var(--color-offer)', label: '🔥 Oferta' },
+      popular: { bg: 'var(--color-warning)', label: '⭐ Popular' }
     };
     return badges[featured];
   };
@@ -172,7 +188,7 @@ function ProductDetail({ settings }) {
                       color: 'white', 
                       fontWeight: '700', 
                       fontSize: isMobile ? '1.1rem' : '1.5rem',
-                      backgroundColor: '#d32f2f',
+                      backgroundColor: 'var(--color-danger)',
                       padding: isMobile ? '6px 18px' : '8px 24px',
                       borderRadius: '8px'
                     }}>AGOTADO</span>
@@ -184,7 +200,7 @@ function ProductDetail({ settings }) {
                     top: isMobile ? '10px' : '16px',
                     right: isMobile ? '10px' : '16px',
                     backgroundColor: featuredBadge.bg,
-                    color: featuredBadge.bg === '#FFC107' ? '#333' : 'white',
+                    color: featuredBadge.bg === 'var(--color-warning)' ? '#333' : 'white',
                     padding: isMobile ? '5px 12px' : '8px 16px',
                     borderRadius: '20px',
                     fontWeight: '600',
@@ -233,7 +249,7 @@ function ProductDetail({ settings }) {
               }}>
                 {product.stock === 0 ? (
                   <>
-                    <span style={{ color: '#d32f2f', fontWeight: '600' }}>Sin stock disponible</span>
+                    <span style={{ color: 'var(--color-danger)', fontWeight: '600' }}>Sin stock disponible</span>
                   </>
                 ) : product.stock <= 5 ? (
                   <>
