@@ -82,7 +82,7 @@ function Landing({ settings }) {
       {/* Banner Promocional */}
       {settings?.banner_active && (
         <section style={{
-          background: `linear-gradient(135deg, var(--color-primary) 0%, #C2185B 100%)`,
+          background: `linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%)`,
           padding: isMobile ? '32px 16px' : '60px 0',
           color: 'white',
           textAlign: 'center'
@@ -245,7 +245,7 @@ function Landing({ settings }) {
                       borderRadius: '10px',
                       fontSize: '0.7rem',
                       fontWeight: '600',
-                      backgroundColor: '#FF5722',
+                      backgroundColor: 'var(--color-offer)',
                       color: 'white'
                     }}>
                       🔥 Oferta
@@ -284,7 +284,7 @@ function Landing({ settings }) {
                         padding: '8px',
                         borderRadius: '6px',
                         border: 'none',
-                        background: product.stock === 0 ? '#ccc' : '#25D366',
+                        background: product.stock === 0 ? 'var(--color-text-light)' : 'var(--color-success)',
                         color: 'white',
                         cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
                         fontSize: '0.85rem',

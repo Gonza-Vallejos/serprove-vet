@@ -10,6 +10,12 @@
   --color-text: #333333;
   --color-text-light: #666666;
   
+  --color-success: #25D366;
+  --color-danger: #d32f2f;
+  --color-warning: #FFC107;
+  --color-offer: #FF5722;
+  --color-new: #4CAF50;
+
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Inter', sans-serif;
 

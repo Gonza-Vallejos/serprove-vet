@@ -98,7 +98,7 @@ function Catalog({ settings }) {
 
       {/* Header */}
       <section style={{
-        background: `linear-gradient(135deg, var(--color-primary) 0%, #C2185B 100%)`,
+        background: `linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%)`,
         padding: isMobile ? '28px 16px' : '40px 20px',
         color: 'white',
         textAlign: 'center'
@@ -141,9 +141,9 @@ function Catalog({ settings }) {
                   borderRadius: '20px',
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
-                  background: selectedCategory === 'ofertas' ? '#FF5722' : 'white',
-                  color: selectedCategory === 'ofertas' ? 'white' : '#FF5722',
-                  border: selectedCategory === 'ofertas' ? 'none' : '1px solid #FF5722',
+                  background: selectedCategory === 'ofertas' ? 'var(--color-offer)' : 'white',
+                  color: selectedCategory === 'ofertas' ? 'white' : 'var(--color-offer)',
+                  border: selectedCategory === 'ofertas' ? 'none' : '1px solid var(--color-offer)',
                   cursor: 'pointer',
                   fontWeight: '500',
                   fontSize: '0.85rem'
@@ -280,7 +280,7 @@ function Catalog({ settings }) {
                             alignItems: 'center',
                             justifyContent: 'center'
                           }}>
-                            <span style={{ color: 'white', fontWeight: '700', fontSize: '0.8rem', backgroundColor: '#d32f2f', padding: '4px 10px', borderRadius: '4px' }}>AGOTADO</span>
+                            <span style={{ color: 'white', fontWeight: '700', fontSize: '0.8rem', backgroundColor: 'var(--color-danger)', padding: '4px 10px', borderRadius: '4px' }}>AGOTADO</span>
                           </div>
                         )}
                         {product.featured && product.featured !== 'none' && (
@@ -292,7 +292,7 @@ function Catalog({ settings }) {
                             borderRadius: '10px',
                             fontSize: '0.7rem',
                             fontWeight: '600',
-                            backgroundColor: product.featured === 'oferta' ? '#FF5722' : product.featured === 'nuevo' ? '#4CAF50' : '#FFC107',
+                            backgroundColor: product.featured === 'oferta' ? 'var(--color-offer)' : product.featured === 'nuevo' ? 'var(--color-new)' : 'var(--color-warning)',
                             color: product.featured === 'popular' ? '#333' : 'white'
                           }}>
                             {product.featured === 'nuevo' && '🏆 Nuevo'}
@@ -345,7 +345,7 @@ function Catalog({ settings }) {
                               padding: '6px 12px',
                               borderRadius: '6px',
                               border: 'none',
-                              background: product.stock === 0 ? '#ccc' : '#25D366',
+                              background: product.stock === 0 ? 'var(--color-text-light)' : 'var(--color-success)',
                               color: 'white',
                               cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
                               fontSize: '0.8rem',
@@ -453,7 +453,7 @@ function Catalog({ settings }) {
       </section>
 
       {/* Footer */}
-      <footer style={{ background: '#1a1a2e', color: 'white', padding: isMobile ? '32px 16px' : '48px 16px', marginTop: '40px' }}>
+      <footer style={{ background: 'var(--color-secondary)', color: 'white', padding: isMobile ? '32px 16px' : '48px 16px', marginTop: '40px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: isMobile ? '24px' : '40px', marginBottom: '32px' }}>
             {/* Logo & Description */}
