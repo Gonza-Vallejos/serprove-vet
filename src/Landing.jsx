@@ -5,6 +5,7 @@ import { Mail, MapPin, Phone, Clock, Plus } from 'lucide-react';
 import { useCart } from './context/CartContext';
 import Navbar from './components/Navbar';
 import { toast } from 'sonner';
+import { supabase } from './supabaseClient';
 
 function Landing({ settings }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -22,10 +23,16 @@ function Landing({ settings }) {
   }, []);
 
   useEffect(() => {
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => setProducts(data))
-      .catch(err => console.error("Error fetching products:", err));
+    const fetchProducts = async () => {
+      try {
+        const { data, error } = await supabase.from('products').select('*');
+        if (error) throw error;
+        setProducts(data || []);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+    fetchProducts();
   }, []);
 
   useEffect(() => {

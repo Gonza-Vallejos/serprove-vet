@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { useState, useEffect } from 'react';
 import Landing from './Landing';
@@ -17,6 +17,7 @@ import './index.css';
 function AppContent() {
   const [settings, setSettings] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const location = useLocation();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -41,7 +42,7 @@ function AppContent() {
     };
 
     fetchSettings();
-  }, []);
+  }, [location.pathname]);
 
   return (
     <>
