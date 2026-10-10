@@ -11,6 +11,7 @@ import Contact from './Contact';
 import Catalog from './Catalog';
 import { CartProvider } from './context/CartContext';
 import CartDrawer from './components/CartDrawer';
+import { supabase } from './supabaseClient';
 import './index.css';
 
 function AppContent() {
@@ -24,10 +25,22 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then(res => res.json())
-      .then(data => setSettings(data))
-      .catch(err => console.error('Error fetching settings:', err));
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('*')
+          .eq('id', 1)
+          .single();
+        
+        if (error) throw error;
+        setSettings(data);
+      } catch (err) {
+        console.error('Error fetching settings from Supabase:', err);
+      }
+    };
+
+    fetchSettings();
   }, []);
 
   return (

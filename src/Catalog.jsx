@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, SlidersHorizontal, Phone, Mail, MapPin, Plus
 import { useCart } from './context/CartContext';
 import Navbar from './components/Navbar';
 import { toast } from 'sonner';
+import { supabase } from './supabaseClient';
 
 const PRODUCTS_PER_PAGE = 8;
 
@@ -25,16 +26,25 @@ function Catalog({ settings }) {
   }, []);
 
   useEffect(() => {
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => setProducts(data))
-      .catch(err => console.error("Error fetching products:", err));
+    const fetchData = async () => {
+      try {
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select('*');
+        if (productsError) throw productsError;
+        setProducts(productsData || []);
 
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*');
+        if (categoriesError) throw categoriesError;
+        setCategories(categoriesData || []);
+      } catch (err) {
+        console.error("Error fetching data from Supabase:", err);
+      }
+    };
 
-    fetch('/api/categories')
-      .then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => console.error("Error fetching categories:", err));
+    fetchData();
   }, []);
 
   useEffect(() => {
