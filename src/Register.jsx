@@ -3,13 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Shield, Check, X, User, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
-const hashPassword = async (password) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + 'serprove_salt_2024');
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-};
+import { supabase } from './supabaseClient';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -93,39 +87,17 @@ function Register() {
     setIsLoading(true);
 
     try {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Check if user already exists
-      const users = JSON.parse(localStorage.getItem('serprove_users') || '[]');
-      const userExists = users.find(u => 
-        u.username.toLowerCase() === formData.username.toLowerCase() || 
-        u.email.toLowerCase() === formData.email.toLowerCase()
-      );
-
-      if (userExists) {
-        setError('El usuario o email ya existe.');
-        setIsLoading(false);
-        return;
-      }
-
-      // Hash password and create user
-      const hashedPassword = await hashPassword(formData.password);
-      const hashedAnswer = await hashPassword(formData.securityAnswer.toLowerCase());
-
-      const newUser = {
-        id: Date.now().toString(),
-        username: formData.username,
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
-        password: hashedPassword,
-        securityQuestion: formData.securityQuestion,
-        securityAnswer: hashedAnswer,
-        createdAt: Date.now(),
-        lastLogin: null
-      };
+        password: formData.password,
+        options: {
+          data: {
+            username: formData.username
+          }
+        }
+      });
 
-      users.push(newUser);
-      localStorage.setItem('serprove_users', JSON.stringify(users));
+      if (signUpError) throw signUpError;
 
       setSuccess(true);
       setIsLoading(false);
@@ -135,7 +107,11 @@ function Register() {
       setTimeout(() => navigate('/login'), 2000);
 
     } catch (err) {
-      setError('Error al crear la cuenta. Intenta de nuevo.');
+      if (err.message.includes('already registered')) {
+        setError('El email ya está registrado.');
+      } else {
+        setError('Error al crear la cuenta. Intenta de nuevo.');
+      }
       setIsLoading(false);
     }
   };

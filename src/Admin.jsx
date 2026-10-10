@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, LogOut, Plus, Settings, Package, Tags, Edit3, X, Check, Search, Shield, Clock, TrendingUp, AlertTriangle, DollarSign, PackageX, BarChart3, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from './supabaseClient';
 
 function Admin() {
   const [activeTab, setActiveTab] = useState('products');
@@ -53,108 +54,51 @@ function Admin() {
 
   // Session timeout check
   useEffect(() => {
-    const checkSession = () => {
-      const sessionData = localStorage.getItem('serprove_session');
-      const isAuth = localStorage.getItem('isAuthenticated');
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!sessionData || !isAuth) {
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('serprove_session');
+      if (!session) {
         navigate('/login');
         return false;
       }
 
-      try {
-        const session = JSON.parse(sessionData);
-        const now = Date.now();
-        
-        // Check if session expired
-        if (now >= session.expiresAt) {
-          localStorage.removeItem('isAuthenticated');
-          localStorage.removeItem('serprove_session');
-          navigate('/login', { state: { message: 'Tu sesión expiró. Ingresá de nuevo.' } });
-          return false;
-        }
+      setSessionInfo({
+        username: session.user.email,
+        expiresAt: session.expires_at * 1000,
+        timeRemaining: Math.ceil((session.expires_at * 1000 - Date.now()) / 1000)
+      });
+      return true;
+    };
 
-        // Update session info for UI
+    checkSession().then((isValid) => {
+      if (isValid) {
+        fetchProducts();
+        fetchCategories();
+        fetchSettings();
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/login');
+      } else if (session) {
         setSessionInfo({
-          username: session.username,
-          expiresAt: session.expiresAt,
-          timeRemaining: Math.ceil((session.expiresAt - now) / 1000)
+          username: session.user.email,
+          expiresAt: session.expires_at * 1000,
+          timeRemaining: Math.ceil((session.expires_at * 1000 - Date.now()) / 1000)
         });
-        
-        return true;
-      } catch (e) {
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('serprove_session');
-        navigate('/login');
-        return false;
       }
-    };
+    });
 
-    if (!checkSession()) return;
-
-    // Update time remaining every second
-    const interval = setInterval(() => {
-      const sessionData = localStorage.getItem('serprove_session');
-      if (sessionData) {
-        const session = JSON.parse(sessionData);
-        const now = Date.now();
-        const remaining = Math.ceil((session.expiresAt - now) / 1000);
-        
-        if (remaining <= 0) {
-          localStorage.removeItem('isAuthenticated');
-          localStorage.removeItem('serprove_session');
-          navigate('/login', { state: { message: 'Tu sesión expiró. Ingresá de nuevo.' } });
-        } else {
-          setSessionInfo(prev => ({ ...prev, timeRemaining: remaining }));
-        }
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [navigate]);
-
-  // Activity tracking - extend session on activity
-  useEffect(() => {
-    const extendSession = () => {
-      const sessionData = localStorage.getItem('serprove_session');
-      if (sessionData) {
-        const session = JSON.parse(sessionData);
-        const rememberMe = localStorage.getItem('rememberMe') === 'true';
-        const newExpiresAt = Date.now() + (rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000);
-        
-        session.expiresAt = newExpiresAt;
-        localStorage.setItem('serprove_session', JSON.stringify(session));
-      }
-    };
-
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-    events.forEach(event => window.addEventListener(event, extendSession));
-    
-    return () => {
-      events.forEach(event => window.removeEventListener(event, extendSession));
-    };
-  }, []);
-
-  useEffect(() => {
-    const isAuth = localStorage.getItem('isAuthenticated');
-    if (!isAuth) {
-      navigate('/login');
-      return;
-    }
-
-    fetchProducts();
-    fetchCategories();
-    fetchSettings();
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/categories');
-      const data = await res.json();
-      setCategories(data);
-      if (data.length > 0 && !newProduct.category) {
+      const { data, error } = await supabase.from('categories').select('*');
+      if (error) throw error;
+      setCategories(data || []);
+      if (data?.length > 0 && !newProduct.category) {
         setNewProduct(prev => ({ ...prev, category: data[0].name }));
       }
     } catch (err) {
@@ -164,39 +108,40 @@ function Admin() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings');
-      const data = await res.json();
-      setSettings(data);
+      const { data, error } = await supabase.from('settings').select('*').eq('id', 1).single();
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) {
+        setSettings(data);
+      }
     } catch (err) {
       console.error("Error fetching settings:", err);
     }
   };
 
   const handleSettingsChange = (e) => {
-    const { name, value } = e.target;
-    setSettings(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    const val = type === 'checkbox' ? checked : value;
+    setSettings(prev => ({ ...prev, [name]: val }));
   };
 
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     try {
-      await fetch('/api/settings', {
-        method: 'PUT', // or PATCH
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
-      });
+      const { error } = await supabase.from('settings').upsert({ id: 1, ...settings });
+      if (error) throw error;
       toast.success('Configuración guardada correctamente');
     } catch (err) {
       console.error("Error saving settings:", err);
+      toast.error('Error al guardar configuración');
     }
   };
 
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch('/api/products');
-      const data = await res.json();
-      setProducts(data);
+      const { data, error } = await supabase.from('products').select('*');
+      if (error) throw error;
+      setProducts(data || []);
     } catch (err) {
       console.error("Error fetching products:", err);
     } finally {
@@ -204,8 +149,8 @@ function Admin() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate('/login');
   };
 
@@ -216,9 +161,8 @@ function Admin() {
         label: 'Eliminar',
         onClick: async () => {
           try {
-            await fetch(`/api/products/${id}`, {
-              method: 'DELETE',
-            });
+            const { error } = await supabase.from('products').delete().eq('id', id);
+            if (error) throw error;
             fetchProducts(); 
             toast.success('Producto eliminado correctamente');
           } catch (err) {
@@ -241,9 +185,8 @@ function Admin() {
         label: 'Eliminar',
         onClick: async () => {
           try {
-            await fetch(`/api/categories/${id}`, {
-              method: 'DELETE',
-            });
+            const { error } = await supabase.from('categories').delete().eq('id', id);
+            if (error) throw error;
             fetchCategories(); 
             toast.success('Categoría eliminada correctamente');
           } catch (err) {
@@ -266,11 +209,8 @@ function Admin() {
   const handleSaveEdit = async (e) => {
     e.preventDefault();
     try {
-      await fetch(`/api/products/${editingProduct.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingProduct)
-      });
+      const { error } = await supabase.from('products').update(editingProduct).eq('id', editingProduct.id);
+      if (error) throw error;
       setEditingProduct(null);
       fetchProducts();
       toast.success('Producto actualizado correctamente');
@@ -292,11 +232,8 @@ function Admin() {
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
-      await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProduct)
-      });
+      const { error } = await supabase.from('products').insert([newProduct]);
+      if (error) throw error;
       setNewProduct({ name: '', description: '', category: categories[0]?.name || '', laboratorio: '', price: '', stock: 0, featured: 'none', image: '/product.jpg' });
       fetchProducts();
       setIsAddModalOpen(false);
@@ -310,11 +247,8 @@ function Admin() {
   const handleAddCategory = async (e) => {
     e.preventDefault();
     try {
-      await fetch('/api/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newCategory)
-      });
+      const { error } = await supabase.from('categories').insert([newCategory]);
+      if (error) throw error;
       setNewCategory({ name: '' });
       fetchCategories();
       toast.success('Categoría creada correctamente');

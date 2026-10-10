@@ -3,17 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Shield, AlertTriangle, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Simple hash function for password storage
-const hashPassword = async (password) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + 'serprove_salt_2024');
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-};
+import { supabase } from './supabaseClient';
 
 function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -64,7 +57,7 @@ function Login() {
       return;
     }
 
-    if (!username.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim()) {
       setError('Completá todos los campos.');
       return;
     }
@@ -72,63 +65,37 @@ function Login() {
     setIsLoading(true);
     setError('');
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
     try {
-      // Get stored users
-      const users = JSON.parse(localStorage.getItem('serprove_users') || '[]');
-      const hashedInput = await hashPassword(password);
-      
-      // Find user with matching username and password
-      const validUser = users.find(u => 
-        u.username.toLowerCase() === username.toLowerCase() && 
-        u.password === hashedInput
-      );
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
 
-      // Fallback for default admin (if no users registered yet)
-      const isDefaultAdmin = username.toLowerCase() === 'admin' && password === 'admin123';
-      const isFirstUser = users.length === 0 && isDefaultAdmin;
-
-      if (validUser || isFirstUser) {
-        // Generate session token
-        const sessionToken = await hashPassword(Date.now().toString() + username);
-        const sessionData = {
-          username: validUser?.username || username,
-          loginTime: Date.now(),
-          expiresAt: Date.now() + (rememberMe ? 7 * 24 * 60 * 60 * 1000 : 30 * 60 * 1000), // 7 days or 30 min
-          token: sessionToken
-        };
-        
-        localStorage.setItem('serprove_session', JSON.stringify(sessionData));
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('rememberMe', rememberMe ? 'true' : 'false');
-        
-        // Reset attempts on success
-        setAttempts(0);
-        setIsLoading(false);
-        toast.success(`¡Bienvenido, ${validUser?.username || username}!`);
-        navigate('/admin');
-      } else {
-        // Failed attempt
-        const newAttempts = attempts + 1;
-        setAttempts(newAttempts);
-        setLastAttemptTime(Date.now());
-        
-        if (newAttempts >= 5) {
-          // Lock for 5 minutes
-          const lockTime = Date.now() + 5 * 60 * 1000;
-          setLockedUntil(lockTime);
-          localStorage.setItem('loginLockedUntil', lockTime.toString());
-          setError(`Demasiados intentos fallidos. Bloqueado por 5 minutos.`);
-        } else {
-          const remaining = 5 - newAttempts;
-          setError(`Contraseña incorrecta. Te quedan ${remaining} intentos.`);
-        }
-        setIsLoading(false);
+      if (authError) {
+        throw authError;
       }
+
+      // Reset attempts on success
+      setAttempts(0);
+      setIsLoading(false);
+      toast.success(`¡Bienvenido!`);
+      navigate('/admin');
+      
     } catch (err) {
-      setError('Error al intentar iniciar sesión.');
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      setLastAttemptTime(Date.now());
+      
+      if (newAttempts >= 5) {
+        // Lock for 5 minutes
+        const lockTime = Date.now() + 5 * 60 * 1000;
+        setLockedUntil(lockTime);
+        localStorage.setItem('loginLockedUntil', lockTime.toString());
+        setError(`Demasiados intentos fallidos. Bloqueado por 5 minutos.`);
+      } else {
+        const remaining = 5 - newAttempts;
+        setError(`Credenciales incorrectas. Te quedan ${remaining} intentos.`);
+      }
       setIsLoading(false);
     }
   };
@@ -202,11 +169,11 @@ function Login() {
         
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Usuario</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Email</label>
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={lockedUntil || isLoading}
               style={{
                 width: '100%',
@@ -215,7 +182,7 @@ function Login() {
                 border: '1px solid #bbb',
                 fontSize: '1rem'
               }}
-              placeholder="Tu nombre de usuario"
+              placeholder="Tu correo electrónico"
             />
           </div>
           
