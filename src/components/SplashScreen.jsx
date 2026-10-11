@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import logoImg from '../assets/Gemini_Generated_Image_idiu8widiu8widiu.jpeg';
 
-export default function SplashScreen({ duration = 1100, onComplete }) {
+export default function SplashScreen({ duration = 1000, onComplete }) {
   const [fading, setFading] = useState(false);
   const [visible, setVisible] = useState(true);
 
@@ -10,17 +10,17 @@ export default function SplashScreen({ duration = 1100, onComplete }) {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // Iniciar desvanecimiento a los 'duration' ms
+    // Iniciar desvanecimiento a los 1000ms
     const fadeTimer = setTimeout(() => {
       setFading(true);
     }, duration);
 
-    // Retirar del DOM una vez completada la transición CSS (400ms)
+    // Retirar del DOM una vez completada la transición CSS
     const removeTimer = setTimeout(() => {
       setVisible(false);
       document.body.style.overflow = originalOverflow || '';
       if (onComplete) onComplete();
-    }, duration + 400);
+    }, duration + 350);
 
     return () => {
       clearTimeout(fadeTimer);
@@ -32,13 +32,15 @@ export default function SplashScreen({ duration = 1100, onComplete }) {
   if (!visible) return null;
 
   return (
-    <aside className={`splash-screen ${fading ? 'splash-fading' : ''}`} aria-label="Cargando Serprove">
+    <aside className={`splash-screen ${fading ? 'splash-fading' : ''}`} aria-label="Cargando Serprove Vet">
       <div className="splash-glow" />
       <div className="splash-content">
         <div className="splash-logo-card">
-          <div className="splash-logo-badge">
-            <img src={logoImg} alt="Serprove" className="splash-logo-img" />
-          </div>
+          <img
+            src={logoImg}
+            alt="Serprove Logo"
+            className="splash-logo-img"
+          />
           <h1 className="splash-logo-title">
             SERPR<span className="splash-cross">+</span>VE
           </h1>
