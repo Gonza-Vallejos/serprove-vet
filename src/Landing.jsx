@@ -4,10 +4,12 @@ import logoImg from './assets/Gemini_Generated_Image_idiu8widiu8widiu.jpeg';
 import { Mail, MapPin, Phone, Clock, Plus } from 'lucide-react';
 import { useCart } from './context/CartContext';
 import Navbar from './components/Navbar';
+import SplashScreen from './components/SplashScreen';
 import { toast } from 'sonner';
 import { supabase } from './supabaseClient';
 
 function Landing({ settings }) {
+  const [showSplash, setShowSplash] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [products, setProducts] = useState([]);
   const navigate = useNavigate();
@@ -59,6 +61,10 @@ function Landing({ settings }) {
 
   return (
     <>
+      {showSplash && (
+        <SplashScreen duration={1000} onComplete={() => setShowSplash(false)} />
+      )}
+
       {/* Navbar */}
       <Navbar settings={settings} />
 
