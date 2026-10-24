@@ -1,0 +1,63 @@
+{
+  "name": "serprove-vet-pos-desktop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Sistema de Ventas POS de Escritorio Offline-First para Serprove Vet",
+  "author": "Serprove Vet",
+  "main": "electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:pos": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron": "concurrently \"vite\" \"wait-on http://localhost:5174 && electron .\"",
+    "electron:pos": "concurrently \"vite\" \"wait-on http://localhost:5174 && electron .\"",
+    "electron:start": "electron .",
+    "pack": "vite build && electron-builder --dir",
+    "dist": "vite build && electron-builder"
+  },
+  "build": {
+    "appId": "com.serprove.vet.pos",
+    "productName": "Serprove Vet POS",
+    "electronVersion": "34.5.8",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dir",
+        "dmg"
+      ],
+      "category": "public.app-category.business"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    }
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
+    "dexie": "^4.0.11",
+    "lucide-react": "^1.37.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "concurrently": "^9.2.4",
+    "electron": "34.5.8",
+    "electron-builder": "^26.18.0",
+    "vite": "^8.2.2",
+    "wait-on": "^8.0.2"
+  }
+}

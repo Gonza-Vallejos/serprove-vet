@@ -145,3 +145,66 @@ INSERT INTO public.settings (
     'Chaco, Corrientes, Misiones, Formosa,santa fe',
     true, true, true
 );
+
+-- 5. MÓDULO POS (PUNTO DE VENTA DE ESCRITORIO OFFLINE-FIRST)
+
+-- Agregar columna de código de barras a productos si no existe
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS barcode TEXT UNIQUE;
+
+-- Tabla de Ventas (Sincronizadas desde el POS)
+CREATE TABLE IF NOT EXISTS public.sales (
+    id UUID PRIMARY KEY,
+    sale_number TEXT NOT NULL,
+    total NUMERIC NOT NULL,
+    subtotal NUMERIC NOT NULL,
+    discount NUMERIC DEFAULT 0,
+    payment_method TEXT NOT NULL,
+    amount_paid NUMERIC,
+    change_amount NUMERIC,
+    customer_name TEXT DEFAULT 'Consumidor Final',
+    customer_cuit TEXT,
+    invoice_type TEXT DEFAULT 'X', -- 'X' (Remito), 'B' (Factura B), 'A' (Factura A)
+    cae TEXT,
+    cae_due_date DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    synced_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabla de Detalle de Ventas (Items)
+CREATE TABLE IF NOT EXISTS public.sale_items (
+    id UUID PRIMARY KEY,
+    sale_id UUID REFERENCES public.sales(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
+    product_name TEXT NOT NULL,
+    quantity NUMERIC NOT NULL,
+    unit_price NUMERIC NOT NULL,
+    subtotal NUMERIC NOT NULL
+);
+
+-- Tabla de Turnos / Arqueos de Caja
+CREATE TABLE IF NOT EXISTS public.cash_shifts (
+    id UUID PRIMARY KEY,
+    opened_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    closed_at TIMESTAMP WITH TIME ZONE,
+    opening_amount NUMERIC NOT NULL DEFAULT 0,
+    closing_amount NUMERIC,
+    expected_amount NUMERIC,
+    difference NUMERIC,
+    status TEXT DEFAULT 'open',
+    notes TEXT
+);
+
+-- RLS para las tablas de POS
+ALTER TABLE public.sales ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sale_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cash_shifts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Lectura pública de ventas" ON public.sales FOR SELECT TO public USING (true);
+CREATE POLICY "Escritura de ventas" ON public.sales FOR ALL TO public USING (true) WITH CHECK (true);
+
+CREATE POLICY "Lectura pública de items de venta" ON public.sale_items FOR SELECT TO public USING (true);
+CREATE POLICY "Escritura de items de venta" ON public.sale_items FOR ALL TO public USING (true) WITH CHECK (true);
+
+CREATE POLICY "Lectura pública de turnos" ON public.cash_shifts FOR SELECT TO public USING (true);
+CREATE POLICY "Escritura de turnos" ON public.cash_shifts FOR ALL TO public USING (true) WITH CHECK (true);
+
