@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff, RefreshCw, Clock, DollarSign, History, Minus, Square, X, AlertTriangle } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, Clock, DollarSign, History, Minus, Square, X, AlertTriangle, RotateCcw } from 'lucide-react';
 import { syncEngine } from '../services/syncEngine';
 import { db } from '../db/localDb';
 
-export function POSHeader({ onOpenShiftModal, onOpenHistoryModal, currentShift }) {
+export function POSHeader({ onOpenShiftModal, onOpenHistoryModal, currentShift, onResetCatalog }) {
   const [connection, setConnection] = useState({ isOnline: navigator.onLine, isSyncing: false });
   const [pendingCount, setPendingCount] = useState(0);
   const [time, setTime] = useState(new Date());
@@ -194,6 +194,34 @@ export function POSHeader({ onOpenShiftModal, onOpenHistoryModal, currentShift }
           <History size={14} />
           <span>Historial</span>
         </button>
+
+        {/* Reset clean catalog button */}
+        {onResetCatalog && (
+          <button
+            onClick={() => {
+              if (window.confirm('¿Deseas purgar los productos de prueba y dejar solo los 24 productos oficiales?')) {
+                onResetCatalog();
+              }
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(51, 65, 85, 0.5)',
+              border: '1px solid #334155',
+              color: '#94a3b8',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+            title="Limpiar base local y dejar únicamente los 24 productos oficiales"
+          >
+            <RotateCcw size={13} />
+            <span>Limpiar Catálogo</span>
+          </button>
+        )}
       </div>
 
       {/* Right: Date, Time & Window Controls */}

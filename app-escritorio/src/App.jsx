@@ -8,7 +8,7 @@ import { TicketModal } from './components/TicketModal';
 import { ShiftModal } from './components/ShiftModal';
 import { SalesHistoryModal } from './components/SalesHistoryModal';
 import { syncEngine } from './services/syncEngine';
-import { db } from './db/localDb';
+import { db, resetCatalogToOfficial } from './db/localDb';
 
 export function App() {
   const [products, setProducts] = useState([]);
@@ -206,6 +206,13 @@ export function App() {
     return () => window.removeEventListener('keydown', handleGlobalShortcuts);
   }, [cart, isPaymentOpen, isTicketOpen, isShiftOpen, isHistoryOpen]);
 
+  // Purgar y restablecer catálogo a los 24 productos oficiales limpios
+  const handleResetCatalog = async () => {
+    await resetCatalogToOfficial();
+    const cleanProds = await db.products.toArray();
+    setProducts(cleanProds);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
       {/* Invisible Barcode Scanner Listener for physical USB scanners */}
@@ -216,6 +223,7 @@ export function App() {
         onOpenShiftModal={() => setIsShiftOpen(true)}
         onOpenHistoryModal={() => setIsHistoryOpen(true)}
         currentShift={currentShift}
+        onResetCatalog={handleResetCatalog}
       />
 
       {/* Main Content: Split into Catalog (Left) and Cart (Right) */}

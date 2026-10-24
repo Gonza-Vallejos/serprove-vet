@@ -254,22 +254,30 @@ export const ALL_INITIAL_PRODUCTS = [
   }
 ];
 
-// Carga inicial local asegurando los 24 productos limpios y sin duplicados
+export const CURRENT_CATALOG_VERSION = 'v5_clean_official_only';
+
+// Limpia completamente la tabla de productos y recarga solo los 24 oficiales
+export async function resetCatalogToOfficial() {
+  console.log('[Offline DB] Vaciando productos viejos y cargando catálogo oficial limpio...');
+  await db.products.clear();
+  await db.products.bulkPut(ALL_INITIAL_PRODUCTS);
+  await db.settings.put({ key: 'catalog_version', value: CURRENT_CATALOG_VERSION });
+  console.log('[Offline DB] Catálogo limpio con 24 productos listo.');
+}
+
+// Carga inicial local asegurando que NUNCA queden productos de prueba viejos
 export async function seedInitialLocalProductsIfEmpty() {
-  try {
-    // 1. Eliminar cualquier producto residual antiguo que tenga prefijo 'p-' (como p-10, p-11, p-12)
-    const legacyProducts = await db.products.filter(p => String(p.id).startsWith('p-')).toArray();
-    if (legacyProducts.length > 0) {
-      console.log(`[Offline DB] Purgando ${legacyProducts.length} productos duplicados antiguos (prefijo 'p-')...`);
-      await db.products.bulkDelete(legacyProducts.map(p => p.id));
-    }
-  } catch (err) {
-    console.error('Error limpiando productos antiguos:', err);
+  const versionSetting = await db.settings.get('catalog_version');
+
+  // Si la versión no coincide o nunca se limpió, forzar reseteo limpio
+  if (!versionSetting || versionSetting.value !== CURRENT_CATALOG_VERSION) {
+    await resetCatalogToOfficial();
+    return;
   }
 
   const count = await db.products.count();
   if (count === 0) {
-    console.log('[Offline DB] Poblando catálogo oficial limpio con 24 productos...');
     await db.products.bulkPut(ALL_INITIAL_PRODUCTS);
   }
 }
+
