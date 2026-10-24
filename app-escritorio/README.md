@@ -9,7 +9,7 @@ Sistema de Punto de Venta (POS) de alto rendimiento para veterinarias y petshops
 1. **Arquitectura Offline-First (A prueba de cortes de luz e internet):**
    - Utiliza base de datos local embebida de alta velocidad (**Dexie / IndexedDB**).
    - Registra ventas localmente en menos de 50ms sin depender de la red.
-   - Sincroniza automáticamente ventas y descarga productos con **Supabase** en cuanto se detecta conexión a internet.
+   - Sincroniza automáticamente ventas y descarga productos con **Supabase** en cuanto se detecta conexión a internet. 
 
 2. **Lector de Código de Barras USB Integrado:**
    - Detecta automáticamente pistolas lectoras de códigos de barra conectadas por USB sin necesidad de hacer clic en el buscador.
