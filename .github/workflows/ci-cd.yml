@@ -46,6 +46,8 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git reset --hard HEAD
+          git clean -fd
           git checkout main
           git merge origin/dev --no-edit
           git push origin main
