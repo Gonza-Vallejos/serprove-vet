@@ -76,6 +76,13 @@ class SyncEngine {
   async pullProducts() {
     await seedInitialLocalProductsIfEmpty();
 
+    try {
+      const legacy = await db.products.filter(p => String(p.id).startsWith('p-')).toArray();
+      if (legacy.length > 0) {
+        await db.products.bulkDelete(legacy.map(p => p.id));
+      }
+    } catch {}
+
     if (!this.isOnline) {
       return await db.products.toArray();
     }
@@ -107,7 +114,28 @@ class SyncEngine {
 
       return await db.products.toArray();
     } catch (err) {
-      console.warn('[SyncEngine] Error descargando productos de Supabase, usando catálogo local:', err.message);
+      console.warn('[SyncEngine] Supabase no disponible, intentando sincronización con catálogo local:', err.message);
+      try {
+        const res = await fetch('http://localhost:3001/products');
+        if (res.ok) {
+          const jsonProds = await res.json();
+          const localFormatted = jsonProds.map((p, idx) => ({
+            id: String(p.id),
+            name: p.name,
+            barcode: p.barcode || `779${String(idx + 1).padStart(10, '0')}`,
+            category: p.category || 'General',
+            laboratorio: p.laboratorio || 'N/A',
+            price: Number(p.price) || 0,
+            stock: Number(p.stock) || 0,
+            image: p.image || '/product.jpg',
+            synced_at: new Date().toISOString()
+          }));
+          await db.products.bulkPut(localFormatted);
+          console.log(`[SyncEngine] Sincronizados ${localFormatted.length} productos desde json-server local.`);
+        }
+      } catch {
+        // Si no está corriendo json-server, usa los productos persistidos en Dexie
+      }
       return await db.products.toArray();
     }
   }
