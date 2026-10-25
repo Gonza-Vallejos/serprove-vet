@@ -1,11 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { X, Plus, Minus, Trash2, ShoppingBag, Send } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingBag, Send, User, Phone, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../supabaseClient';
 
 export default function CartDrawer({ settings, isMobile }) {
   const { cart, cartCount, cartTotal, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart, clearCart } = useCart();
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [submittedOrder, setSubmittedOrder] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Bloquea el scroll del fondo mientras el carrito está abierto
   useEffect(() => {
@@ -13,6 +17,7 @@ export default function CartDrawer({ settings, isMobile }) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      setSubmittedOrder(null);
     }
     return () => {
       document.body.style.overflow = '';
@@ -23,10 +28,12 @@ export default function CartDrawer({ settings, isMobile }) {
 
   const whatsappNumber = settings?.global_whatsappPhone || '3794895845';
 
-  const buildWhatsAppMessage = () => {
-    if (cart.length === 0) return '';
+  const buildWhatsAppMessage = (orderNum) => {
+    if (cart.length === 0 && !submittedOrder) return '';
 
-    let message = `🛒 *Pedido de Serprove*\n\n`;
+    let message = `🛒 *Pedido de Serprove* (${orderNum || 'Online'})\n\n`;
+    if (customerName) message += `👤 *Cliente:* ${customerName}\n`;
+    if (customerPhone) message += `📱 *Teléfono:* ${customerPhone}\n\n`;
     message += `📦 *${cartCount} producto(s)*\n\n`;
 
     cart.forEach((item, index) => {
@@ -45,34 +52,56 @@ export default function CartDrawer({ settings, isMobile }) {
     return encodeURIComponent(message);
   };
 
-  const handleWhatsAppOrder = async () => {
-    // 1. Guardar el pedido en Supabase para que llegue a la app de escritorio del POS
-    try {
-      const orderNumber = `WEB-${Math.floor(1000 + Math.random() * 9000)}`;
-      await supabase.from('web_orders').insert({
-        order_number: orderNumber,
-        customer_name: 'Cliente Web',
-        customer_phone: whatsappNumber,
-        items: cart.map(it => ({
-          id: it.id,
-          name: it.name,
-          price: Number(it.price) || 0,
-          quantity: it.quantity,
-          subtotal: (Number(it.price) || 0) * it.quantity
-        })),
-        total: cartTotal,
-        status: 'pendiente',
-        created_at: new Date().toISOString()
-      });
-      toast.success('¡Pedido enviado! La caja de la veterinaria ya fue notificada.');
-    } catch (err) {
-      console.warn('Nota: pedido registrado para WhatsApp:', err);
-    }
+  const handleSendOrder = async () => {
+    if (cart.length === 0) return;
 
-    // 2. Abrir WhatsApp para que el cliente también envíe su mensaje
-    const url = `https://api.whatsapp.com/send?phone=54${whatsappNumber}&text=${buildWhatsAppMessage()}`;
-    window.open(url, '_blank');
+    setIsSubmitting(true);
+    const orderNumber = `WEB-${Math.floor(1000 + Math.random() * 9000)}`;
+    const orderPayload = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `order-${Date.now()}`,
+      order_number: orderNumber,
+      customer_name: customerName.trim() || 'Cliente Web',
+      customer_phone: customerPhone.trim() || whatsappNumber,
+      items: cart.map(it => ({
+        id: String(it.id),
+        name: it.name,
+        price: Number(it.price) || 0,
+        quantity: it.quantity,
+        subtotal: (Number(it.price) || 0) * it.quantity
+      })),
+      total: cartTotal,
+      status: 'pendiente',
+      created_at: new Date().toISOString()
+    };
+
+    // 1. Enviar a la app de escritorio Electron (receptor en puerto 3005)
+    try {
+      await fetch('http://localhost:3005/web_orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload)
+      });
+    } catch {}
+
+    // 2. Enviar a backend local (json-server localhost:3001)
+    try {
+      await fetch('http://localhost:3001/web_orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload)
+      });
+    } catch {}
+
+    // 3. Enviar a Supabase Cloud
+    try {
+      await supabase.from('web_orders').insert(orderPayload);
+    } catch {}
+
+    setSubmittedOrder(orderPayload);
+    setIsSubmitting(false);
+    toast.success(`¡Pedido #${orderNumber} enviado! La caja de la veterinaria ya fue notificada.`);
   };
+
 
   // ----- Header común -----
   const header = (
@@ -251,66 +280,185 @@ export default function CartDrawer({ settings, isMobile }) {
       bottom: 0,
       padding: '14px 16px',
       borderTop: '1px solid #eee',
-      background: '#fafafa',
+      background: '#ffffff',
       boxShadow: '0 -4px 12px rgba(0,0,0,0.06)'
     }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '10px'
-      }}>
-        <span style={{ fontSize: '1rem', fontWeight: '600' }}>Total</span>
-        <span style={{
-          fontSize: '1.3rem',
-          fontWeight: '800',
-          color: 'var(--color-primary, #E91E63)'
+      {submittedOrder ? (
+        <div style={{
+          background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+          border: '1px solid #86efac',
+          borderRadius: '12px',
+          padding: '16px',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
         }}>
-          ${cartTotal.toLocaleString('es-AR')}
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <button
-          onClick={handleWhatsAppOrder}
-          style={{
-            width: '100%',
-            padding: '13px',
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: '#15803d', fontWeight: '800', fontSize: '1.05rem' }}>
+            <CheckCircle2 size={20} color="#16a34a" />
+            ¡Pedido {submittedOrder.order_number} Enviado!
+          </div>
+          <p style={{ fontSize: '0.82rem', color: '#166534', margin: 0, lineHeight: 1.4 }}>
+            Tu pedido ya fue recibido en la caja de la veterinaria. Si deseas confirmar por WhatsApp con un solo toque:
+          </p>
+          <button
+            onClick={() => {
+              const url = `https://api.whatsapp.com/send?phone=54${whatsappNumber}&text=${buildWhatsAppMessage(submittedOrder.order_number)}`;
+              window.open(url, '_blank');
+            }}
+            style={{
+              width: '100%',
+              padding: '11px',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#25D366',
+              color: 'white',
+              fontWeight: '700',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px'
+            }}
+          >
+            <Send size={16} />
+            Confirmar en WhatsApp
+          </button>
+          <button
+            onClick={() => {
+              clearCart();
+              setSubmittedOrder(null);
+              setIsCartOpen(false);
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#4b5563',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              textDecoration: 'underline'
+            }}
+          >
+            Finalizar y seguir navegando
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Formulario de contacto del cliente */}
+          <div style={{
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
             borderRadius: '10px',
-            border: 'none',
-            background: '#25D366',
-            color: 'white',
-            fontWeight: '700',
-            fontSize: '0.95rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
-          }}
-        >
-          <Send size={18} />
-          Enviar Pedido por WhatsApp
-        </button>
-        <button
-          onClick={clearCart}
-          style={{
-            width: '100%',
             padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid #ddd',
-            background: 'white',
-            color: '#666',
-            fontWeight: '500',
-            fontSize: '0.85rem',
-            cursor: 'pointer'
-          }}
-        >
-          Vaciar carrito
-        </button>
-      </div>
+            marginBottom: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Tus datos de contacto
+            </div>
+            <div style={{ position: 'relative' }}>
+              <User size={14} style={{ position: 'absolute', left: '10px', top: '10px', color: '#94a3b8' }} />
+              <input
+                type="text"
+                placeholder="Nombre y Apellido *"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '7px 10px 7px 30px',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div style={{ position: 'relative' }}>
+              <Phone size={14} style={{ position: 'absolute', left: '10px', top: '10px', color: '#94a3b8' }} />
+              <input
+                type="tel"
+                placeholder="Teléfono / WhatsApp *"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '7px 10px 7px 30px',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '10px'
+          }}>
+            <span style={{ fontSize: '1rem', fontWeight: '600' }}>Total</span>
+            <span style={{
+              fontSize: '1.3rem',
+              fontWeight: '800',
+              color: 'var(--color-primary, #E91E63)'
+            }}>
+              ${cartTotal.toLocaleString('es-AR')}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button
+              onClick={handleSendOrder}
+              disabled={isSubmitting}
+              style={{
+                width: '100%',
+                padding: '13px',
+                borderRadius: '10px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                color: 'white',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+              }}
+            >
+              <Send size={18} />
+              {isSubmitting ? 'Enviando a Caja...' : 'Enviar Pedido a Mostrador'}
+            </button>
+            <button
+              onClick={clearCart}
+              style={{
+                width: '100%',
+                padding: '8px',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
+                background: 'white',
+                color: '#64748b',
+                fontWeight: '500',
+                fontSize: '0.82rem',
+                cursor: 'pointer'
+              }}
+            >
+              Vaciar carrito
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
+
 
   // Área scrolleable: productos + footer pegado abajo
   const scrollArea = (

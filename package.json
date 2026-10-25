@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"json-server --watch db.json --port 3001\"",
+    "start:all": "concurrently \"npm run dev\" \"npm run electron:pos\"",
     "dev:pos": "npm --workspace=app-escritorio run dev",
     "electron:pos": "npm --workspace=app-escritorio run electron",
     "pack:pos": "npm --workspace=app-escritorio run pack",

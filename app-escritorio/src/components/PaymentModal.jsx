@@ -5,21 +5,24 @@ export function PaymentModal({
   isOpen,
   onClose,
   total,
-  onConfirmSale
+  onConfirmSale,
+  defaultCustomerName = 'Consumidor Final'
 }) {
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
   const [amountPaid, setAmountPaid] = useState(total);
   const [invoiceType, setInvoiceType] = useState('X'); // X = Remito / Venta Interna, B = Factura B, A = Factura A
-  const [customerName, setCustomerName] = useState('Consumidor Final');
+  const [customerName, setCustomerName] = useState(defaultCustomerName);
   const [customerCuit, setCustomerCuit] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setAmountPaid(total);
+      setCustomerName(defaultCustomerName || 'Consumidor Final');
       setIsSubmitting(false);
     }
-  }, [isOpen, total]);
+  }, [isOpen, total, defaultCustomerName]);
+
 
   if (!isOpen) return null;
 

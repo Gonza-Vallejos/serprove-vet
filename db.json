@@ -314,5 +314,6 @@
     "show_prices": true,
     "show_stock": true,
     "show_cart": true
-  }
+  },
+  "web_orders": []
 }

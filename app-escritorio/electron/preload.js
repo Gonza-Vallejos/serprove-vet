@@ -8,5 +8,10 @@ contextBridge.exposeInMainWorld('desktopAPI', {
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
   maximizeWindow: () => ipcRenderer.send('window-maximize'),
   closeWindow: () => ipcRenderer.send('window-close'),
-  getAppVersion: () => ipcRenderer.invoke('get-app-version')
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  onIncomingWebOrder: (callback) => {
+    const handler = (event, order) => callback(order);
+    ipcRenderer.on('incoming-web-order', handler);
+    return () => ipcRenderer.removeListener('incoming-web-order', handler);
+  }
 });

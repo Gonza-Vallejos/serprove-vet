@@ -8,6 +8,7 @@ import { TicketModal } from './components/TicketModal';
 import { ShiftModal } from './components/ShiftModal';
 import { SalesHistoryModal } from './components/SalesHistoryModal';
 import { WebOrdersModal } from './components/WebOrdersModal';
+import { WebOrdersView } from './components/WebOrdersView';
 import { syncEngine } from './services/syncEngine';
 import { webOrdersEngine } from './services/webOrdersEngine';
 import { db } from './db/localDb';
@@ -16,6 +17,9 @@ export function App() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [discount, setDiscount] = useState(0);
+
+  // View state: 'pos' (Mostrador) o 'web_orders' (Pedidos Web)
+  const [activeTab, setActiveTab] = useState('pos');
 
   // Modals state
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
@@ -30,16 +34,15 @@ export function App() {
   const [currentShift, setCurrentShift] = useState(null);
   const [webOrders, setWebOrders] = useState([]);
   const [activeWebOrderId, setActiveWebOrderId] = useState(null);
+  const [customerNameForPayment, setCustomerNameForPayment] = useState('Consumidor Final');
 
   const searchInputRef = useRef(null);
 
   // Carga inicial de catálogo y turno
   const loadData = useCallback(async () => {
-    // 1. Cargar productos desde motor de sincronización (Offline-First)
     const prods = await syncEngine.pullProducts();
     setProducts(prods);
 
-    // 2. Verificar si hay un turno de caja abierto
     const activeShift = await db.cash_shifts.where('status').equals('open').first();
     setCurrentShift(activeShift || null);
   }, []);
@@ -58,7 +61,7 @@ export function App() {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
         if (existing.quantity >= product.stock) {
-          return prev; // No superar stock disponible
+          return prev;
         }
         return prev.map((item) =>
           item.id === product.id
@@ -95,11 +98,15 @@ export function App() {
     setCart([]);
     setDiscount(0);
     setActiveWebOrderId(null);
+    setCustomerNameForPayment('Consumidor Final');
   };
 
   // Carga un pedido recibido desde la web directamente en la caja para cobrar
   const handleLoadWebOrderToCart = (webOrder) => {
+    setActiveTab('pos');
     setActiveWebOrderId(webOrder.id);
+    setCustomerNameForPayment(webOrder.customer_name || 'Cliente Web');
+
     const loadedItems = (webOrder.items || []).map(it => {
       const existingProduct = products.find(p => String(p.id) === String(it.id));
       return {
@@ -146,15 +153,13 @@ export function App() {
       setCompletedSale(result.sale);
       setCompletedSaleItems(result.items);
 
-      // Limpiar venta actual y cerrar modal de cobro
       setIsPaymentOpen(false);
       setCart([]);
       setDiscount(0);
+      setCustomerNameForPayment('Consumidor Final');
 
-      // Abrir modal de ticket e impresión
       setIsTicketOpen(true);
 
-      // Refrescar catálogo local para reflejar nuevo stock descontado
       const updatedProds = await db.products.toArray();
       setProducts(updatedProds);
     } catch (err) {
@@ -196,7 +201,6 @@ export function App() {
     alert('Turno de caja cerrado con éxito. Se generó el arqueo de caja.');
   };
 
-  // Reimprimir ticket desde el historial
   const handleReprintTicket = async (sale) => {
     const items = await db.sale_items.where('sale_id').equals(sale.id).toArray();
     setCompletedSale(sale);
@@ -208,10 +212,16 @@ export function App() {
   // Atajos de teclado globales ergonómicos
   useEffect(() => {
     const handleGlobalShortcuts = (e) => {
-      // F2: Enfocar buscador de productos
+      // F2: Ir a Mostrador / Enfocar buscador
       if (e.key === 'F2') {
         e.preventDefault();
-        searchInputRef.current?.focus();
+        setActiveTab('pos');
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      }
+      // F6: Conmutar entre Mostrador POS y Pedidos Web
+      else if (e.key === 'F6') {
+        e.preventDefault();
+        setActiveTab(prev => prev === 'pos' ? 'web_orders' : 'pos');
       }
       // F4: Abrir Cobro
       else if (e.key === 'F4') {
@@ -231,6 +241,7 @@ export function App() {
         else if (isTicketOpen) setIsTicketOpen(false);
         else if (isShiftOpen) setIsShiftOpen(false);
         else if (isHistoryOpen) setIsHistoryOpen(false);
+        else if (isWebOrdersOpen) setIsWebOrdersOpen(false);
         else if (cart.length > 0) {
           if (window.confirm('¿Deseas vaciar la venta actual?')) {
             handleClearCart();
@@ -241,48 +252,125 @@ export function App() {
 
     window.addEventListener('keydown', handleGlobalShortcuts);
     return () => window.removeEventListener('keydown', handleGlobalShortcuts);
-  }, [cart, isPaymentOpen, isTicketOpen, isShiftOpen, isHistoryOpen]);
+  }, [cart, isPaymentOpen, isTicketOpen, isShiftOpen, isHistoryOpen, isWebOrdersOpen]);
+
+  const pendingWebOrders = webOrders.filter(o => o.status === 'pendiente' || o.status === 'en_preparacion');
+  const latestPendingOrder = pendingWebOrders[0];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-      {/* Invisible Barcode Scanner Listener for physical USB scanners */}
+      {/* Scanner listener */}
       <BarcodeListener onScan={handleAddToCart} products={products} />
 
-      {/* POS Top Header */}
+      {/* POS Top Header with persistent view switchers */}
       <POSHeader
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
         onOpenShiftModal={() => setIsShiftOpen(true)}
         onOpenHistoryModal={() => setIsHistoryOpen(true)}
         currentShift={currentShift}
-        onOpenWebOrders={() => setIsWebOrdersOpen(true)}
-        webOrdersCount={webOrders.filter(o => o.status === 'pendiente' || o.status === 'en_preparacion').length}
+        webOrdersCount={pendingWebOrders.length}
       />
 
-      {/* Main Content: Split into Catalog (Left) and Cart (Right) */}
-      <main style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <div style={{ flex: 1, height: '100%' }}>
-          <ProductCatalog
-            products={products}
-            onAddToCart={handleAddToCart}
-            searchInputRef={searchInputRef}
+      {/* Top Banner Alert for Incoming Web Orders when working on POS counter */}
+      {activeTab === 'pos' && pendingWebOrders.length > 0 && (
+        <div style={{
+          background: 'linear-gradient(90deg, #1e3a8a, #2563eb, #1e3a8a)',
+          borderBottom: '1px solid #3b82f6',
+          padding: '8px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          color: '#ffffff',
+          boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
+          zIndex: 40
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '16px' }}>🔔</span>
+            <span style={{ fontWeight: 800, fontSize: '13px' }}>
+              ¡Tenés {pendingWebOrders.length} pedido{pendingWebOrders.length > 1 ? 's' : ''} web en espera!
+            </span>
+            {latestPendingOrder && (
+              <span style={{ fontSize: '12px', color: '#bfdbfe' }}>
+                • Último: <b>{latestPendingOrder.order_number}</b> de <b>{latestPendingOrder.customer_name}</b> (${Number(latestPendingOrder.total).toLocaleString('es-AR')})
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {latestPendingOrder && (
+              <button
+                onClick={() => handleLoadWebOrderToCart(latestPendingOrder)}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  background: '#10b981',
+                  border: 'none',
+                  color: '#fff',
+                  fontWeight: 800,
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(16, 185, 129, 0.4)'
+                }}
+              >
+                📥 Cobrar este pedido ahora [F4]
+              </button>
+            )}
+            <button
+              onClick={() => setActiveTab('web_orders')}
+              style={{
+                padding: '5px 12px',
+                borderRadius: '6px',
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              Ver todos ({pendingWebOrders.length}) [F6]
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content: Web Orders View OR Split POS (Catalog + Cart) */}
+      {activeTab === 'web_orders' ? (
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <WebOrdersView
+            orders={webOrders}
+            onLoadOrderToCart={handleLoadWebOrderToCart}
+            onSwitchToPOS={() => setActiveTab('pos')}
           />
         </div>
+      ) : (
+        <main style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+          <div style={{ flex: 1, height: '100%' }}>
+            <ProductCatalog
+              products={products}
+              onAddToCart={handleAddToCart}
+              searchInputRef={searchInputRef}
+            />
+          </div>
 
-        <Cart
-          items={cart}
-          onUpdateQuantity={handleUpdateQuantity}
-          onRemoveItem={handleRemoveItem}
-          onClearCart={handleClearCart}
-          discount={discount}
-          onDiscountChange={setDiscount}
-          onOpenPayment={() => setIsPaymentOpen(true)}
-        />
-      </main>
+          <Cart
+            items={cart}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+            onClearCart={handleClearCart}
+            discount={discount}
+            onDiscountChange={setDiscount}
+            onOpenPayment={() => setIsPaymentOpen(true)}
+          />
+        </main>
+      )}
 
       {/* Payment Modal */}
       <PaymentModal
         isOpen={isPaymentOpen}
         onClose={() => setIsPaymentOpen(false)}
         total={total}
+        defaultCustomerName={customerNameForPayment}
         onConfirmSale={handleConfirmSale}
       />
 
@@ -295,7 +383,7 @@ export function App() {
         onNewSale={() => setIsTicketOpen(false)}
       />
 
-      {/* Shift (Apertura y Cierre de Caja) Modal */}
+      {/* Shift Modal */}
       <ShiftModal
         isOpen={isShiftOpen}
         onClose={() => setIsShiftOpen(false)}
@@ -311,7 +399,7 @@ export function App() {
         onReprintTicket={handleReprintTicket}
       />
 
-      {/* Web Orders from Online Catalog Modal */}
+      {/* Web Orders Modal (también accesible por compatibilidad) */}
       <WebOrdersModal
         isOpen={isWebOrdersOpen}
         onClose={() => setIsWebOrdersOpen(false)}
@@ -321,3 +409,4 @@ export function App() {
     </div>
   );
 }
+

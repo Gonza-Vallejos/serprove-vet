@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -129,8 +130,94 @@ ipcMain.on('window-maximize', () => {
 });
 ipcMain.on('window-close', () => mainWindow?.close());
 
+// Almacén en memoria de pedidos web recibidos para el servidor HTTP embebido
+const memoryWebOrders = [];
+
+function startLocalWebOrdersServer() {
+  const server = http.createServer((req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+      res.writeHead(200);
+      res.end();
+      return;
+    }
+
+    if (req.url === '/web_orders' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(memoryWebOrders));
+      return;
+    }
+
+    if (req.url === '/web_orders' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const order = JSON.parse(body);
+          if (!order.id) {
+            order.id = `order-${Date.now()}`;
+          }
+          const existingIdx = memoryWebOrders.findIndex(o => String(o.id) === String(order.id));
+          if (existingIdx >= 0) {
+            memoryWebOrders[existingIdx] = order;
+          } else {
+            memoryWebOrders.unshift(order);
+          }
+
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('incoming-web-order', order);
+          }
+
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(order));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
+
+    if (req.url?.startsWith('/web_orders/') && req.method === 'PATCH') {
+      const orderId = req.url.split('/')[2];
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const patch = JSON.parse(body);
+          const found = memoryWebOrders.find(o => String(o.id) === String(orderId));
+          if (found) {
+            Object.assign(found, patch);
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(found || patch));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
+
+    res.writeHead(404);
+    res.end();
+  });
+
+  server.listen(3005, '0.0.0.0', () => {
+    console.log('Servidor de recepción de pedidos web activo en puerto 3005');
+  });
+
+  server.on('error', (err) => {
+    console.warn('Nota sobre servidor HTTP local de Electron:', err.message);
+  });
+}
+
 app.whenReady().then(() => {
   createWindow();
+  startLocalWebOrdersServer();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -144,3 +231,4 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
