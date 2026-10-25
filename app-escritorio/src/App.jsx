@@ -7,8 +7,10 @@ import { PaymentModal } from './components/PaymentModal';
 import { TicketModal } from './components/TicketModal';
 import { ShiftModal } from './components/ShiftModal';
 import { SalesHistoryModal } from './components/SalesHistoryModal';
+import { WebOrdersModal } from './components/WebOrdersModal';
 import { syncEngine } from './services/syncEngine';
-import { db, resetCatalogToOfficial } from './db/localDb';
+import { webOrdersEngine } from './services/webOrdersEngine';
+import { db } from './db/localDb';
 
 export function App() {
   const [products, setProducts] = useState([]);
@@ -20,11 +22,14 @@ export function App() {
   const [isTicketOpen, setIsTicketOpen] = useState(false);
   const [isShiftOpen, setIsShiftOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isWebOrdersOpen, setIsWebOrdersOpen] = useState(false);
 
-  // Active Sale & Current Shift
+  // Active Sale, Current Shift & Web Orders
   const [completedSale, setCompletedSale] = useState(null);
   const [completedSaleItems, setCompletedSaleItems] = useState([]);
   const [currentShift, setCurrentShift] = useState(null);
+  const [webOrders, setWebOrders] = useState([]);
+  const [activeWebOrderId, setActiveWebOrderId] = useState(null);
 
   const searchInputRef = useRef(null);
 
@@ -41,6 +46,10 @@ export function App() {
 
   useEffect(() => {
     loadData();
+    const unsub = webOrdersEngine.subscribe((orders) => {
+      setWebOrders(orders);
+    });
+    return () => unsub();
   }, [loadData]);
 
   // Manejo de agregar al carrito (manual o escaneado)
@@ -85,6 +94,28 @@ export function App() {
   const handleClearCart = () => {
     setCart([]);
     setDiscount(0);
+    setActiveWebOrderId(null);
+  };
+
+  // Carga un pedido recibido desde la web directamente en la caja para cobrar
+  const handleLoadWebOrderToCart = (webOrder) => {
+    setActiveWebOrderId(webOrder.id);
+    const loadedItems = (webOrder.items || []).map(it => {
+      const existingProduct = products.find(p => String(p.id) === String(it.id));
+      return {
+        id: String(it.id),
+        name: it.name,
+        price: Number(it.price) || 0,
+        quantity: Number(it.quantity) || 1,
+        stock: existingProduct ? existingProduct.stock : 99,
+        category: existingProduct ? existingProduct.category : 'General',
+        barcode: existingProduct ? existingProduct.barcode : ''
+      };
+    });
+
+    setCart(loadedItems);
+    setDiscount(0);
+    setIsPaymentOpen(true);
   };
 
   // Cálculo del total actual
@@ -105,6 +136,12 @@ export function App() {
         invoiceType: paymentDetails.invoiceType,
         shiftId: currentShift?.id || null
       });
+
+      // Si la venta provino de un pedido web, marcarlo como facturado
+      if (activeWebOrderId) {
+        await webOrdersEngine.updateOrderStatus(activeWebOrderId, 'facturado');
+        setActiveWebOrderId(null);
+      }
 
       setCompletedSale(result.sale);
       setCompletedSaleItems(result.items);
@@ -206,13 +243,6 @@ export function App() {
     return () => window.removeEventListener('keydown', handleGlobalShortcuts);
   }, [cart, isPaymentOpen, isTicketOpen, isShiftOpen, isHistoryOpen]);
 
-  // Purgar y restablecer catálogo a los 24 productos oficiales limpios
-  const handleResetCatalog = async () => {
-    await resetCatalogToOfficial();
-    const cleanProds = await db.products.toArray();
-    setProducts(cleanProds);
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
       {/* Invisible Barcode Scanner Listener for physical USB scanners */}
@@ -223,7 +253,8 @@ export function App() {
         onOpenShiftModal={() => setIsShiftOpen(true)}
         onOpenHistoryModal={() => setIsHistoryOpen(true)}
         currentShift={currentShift}
-        onResetCatalog={handleResetCatalog}
+        onOpenWebOrders={() => setIsWebOrdersOpen(true)}
+        webOrdersCount={webOrders.filter(o => o.status === 'pendiente' || o.status === 'en_preparacion').length}
       />
 
       {/* Main Content: Split into Catalog (Left) and Cart (Right) */}
@@ -278,6 +309,14 @@ export function App() {
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         onReprintTicket={handleReprintTicket}
+      />
+
+      {/* Web Orders from Online Catalog Modal */}
+      <WebOrdersModal
+        isOpen={isWebOrdersOpen}
+        onClose={() => setIsWebOrdersOpen(false)}
+        orders={webOrders}
+        onLoadOrderToCart={handleLoadWebOrderToCart}
       />
     </div>
   );

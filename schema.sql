@@ -208,3 +208,23 @@ CREATE POLICY "Escritura de items de venta" ON public.sale_items FOR ALL TO publ
 CREATE POLICY "Lectura pública de turnos" ON public.cash_shifts FOR SELECT TO public USING (true);
 CREATE POLICY "Escritura de turnos" ON public.cash_shifts FOR ALL TO public USING (true) WITH CHECK (true);
 
+-- 6. TABLA DE PEDIDOS WEB (INTEGRACIÓN WEB ➔ POS ESCRITORIO)
+CREATE TABLE IF NOT EXISTS public.web_orders (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    order_number TEXT NOT NULL,
+    customer_name TEXT DEFAULT 'Cliente Web',
+    customer_phone TEXT,
+    customer_address TEXT,
+    notes TEXT,
+    items JSONB NOT NULL,
+    total NUMERIC NOT NULL,
+    status TEXT DEFAULT 'pendiente', -- 'pendiente', 'en_preparacion', 'facturado', 'cancelado'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.web_orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Lectura pública de web_orders" ON public.web_orders FOR SELECT TO public USING (true);
+CREATE POLICY "Inserción pública de web_orders" ON public.web_orders FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Actualización de web_orders" ON public.web_orders FOR UPDATE TO public USING (true);
+
+

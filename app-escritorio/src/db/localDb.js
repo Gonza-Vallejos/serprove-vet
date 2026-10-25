@@ -3,11 +3,12 @@ import Dexie from 'dexie';
 // Definición de la Base de Datos Local Offline (IndexedDB de alta velocidad)
 export const db = new Dexie('SerproveVetPOS_Local');
 
-db.version(2).stores({
+db.version(3).stores({
   products: 'id, barcode, name, category, price, stock, laboratorio, synced_at',
   sales: 'id, sale_number, sync_status, created_at, shift_id, payment_method, total',
   sale_items: 'id, sale_id, product_id, product_name',
   cash_shifts: 'id, status, opened_at, closed_at',
+  web_orders: 'id, order_number, customer_name, status, created_at',
   settings: 'key'
 });
 
@@ -254,25 +255,19 @@ export const ALL_INITIAL_PRODUCTS = [
   }
 ];
 
-export const CURRENT_CATALOG_VERSION = 'v5_clean_official_only';
-
-// Limpia completamente la tabla de productos y recarga solo los 24 oficiales
-export async function resetCatalogToOfficial() {
-  console.log('[Offline DB] Vaciando productos viejos y cargando catálogo oficial limpio...');
-  await db.products.clear();
-  await db.products.bulkPut(ALL_INITIAL_PRODUCTS);
-  await db.settings.put({ key: 'catalog_version', value: CURRENT_CATALOG_VERSION });
-  console.log('[Offline DB] Catálogo limpio con 24 productos listo.');
-}
-
 // Carga inicial local asegurando que NUNCA queden productos de prueba viejos
 export async function seedInitialLocalProductsIfEmpty() {
-  const versionSetting = await db.settings.get('catalog_version');
+  try {
+    const validIds = new Set(ALL_INITIAL_PRODUCTS.map(p => String(p.id)));
+    const allProducts = await db.products.toArray();
+    const testProducts = allProducts.filter(p => !validIds.has(String(p.id)) || String(p.id).startsWith('p-'));
 
-  // Si la versión no coincide o nunca se limpió, forzar reseteo limpio
-  if (!versionSetting || versionSetting.value !== CURRENT_CATALOG_VERSION) {
-    await resetCatalogToOfficial();
-    return;
+    if (testProducts.length > 0) {
+      console.log(`[Offline DB] Eliminando ${testProducts.length} productos de prueba...`);
+      await db.products.bulkDelete(testProducts.map(p => p.id));
+    }
+  } catch (err) {
+    console.error('Error purgando productos de prueba:', err);
   }
 
   const count = await db.products.count();

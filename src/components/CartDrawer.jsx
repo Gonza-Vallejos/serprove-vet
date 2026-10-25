@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { X, Plus, Minus, Trash2, ShoppingBag, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '../supabaseClient';
 
 export default function CartDrawer({ settings, isMobile }) {
   const { cart, cartCount, cartTotal, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart, clearCart } = useCart();
@@ -44,7 +45,31 @@ export default function CartDrawer({ settings, isMobile }) {
     return encodeURIComponent(message);
   };
 
-  const handleWhatsAppOrder = () => {
+  const handleWhatsAppOrder = async () => {
+    // 1. Guardar el pedido en Supabase para que llegue a la app de escritorio del POS
+    try {
+      const orderNumber = `WEB-${Math.floor(1000 + Math.random() * 9000)}`;
+      await supabase.from('web_orders').insert({
+        order_number: orderNumber,
+        customer_name: 'Cliente Web',
+        customer_phone: whatsappNumber,
+        items: cart.map(it => ({
+          id: it.id,
+          name: it.name,
+          price: Number(it.price) || 0,
+          quantity: it.quantity,
+          subtotal: (Number(it.price) || 0) * it.quantity
+        })),
+        total: cartTotal,
+        status: 'pendiente',
+        created_at: new Date().toISOString()
+      });
+      toast.success('¡Pedido enviado! La caja de la veterinaria ya fue notificada.');
+    } catch (err) {
+      console.warn('Nota: pedido registrado para WhatsApp:', err);
+    }
+
+    // 2. Abrir WhatsApp para que el cliente también envíe su mensaje
     const url = `https://api.whatsapp.com/send?phone=54${whatsappNumber}&text=${buildWhatsAppMessage()}`;
     window.open(url, '_blank');
   };

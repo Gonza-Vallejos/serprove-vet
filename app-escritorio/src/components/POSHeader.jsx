@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff, RefreshCw, Clock, DollarSign, History, Minus, Square, X, AlertTriangle, RotateCcw } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, Clock, DollarSign, History, Minus, Square, X, AlertTriangle, Globe } from 'lucide-react';
 import { syncEngine } from '../services/syncEngine';
 import { db } from '../db/localDb';
 
-export function POSHeader({ onOpenShiftModal, onOpenHistoryModal, currentShift, onResetCatalog }) {
+export function POSHeader({ onOpenShiftModal, onOpenHistoryModal, currentShift, onOpenWebOrders, webOrdersCount = 0 }) {
   const [connection, setConnection] = useState({ isOnline: navigator.onLine, isSyncing: false });
   const [pendingCount, setPendingCount] = useState(0);
   const [time, setTime] = useState(new Date());
@@ -195,33 +195,41 @@ export function POSHeader({ onOpenShiftModal, onOpenHistoryModal, currentShift, 
           <span>Historial</span>
         </button>
 
-        {/* Reset clean catalog button */}
-        {onResetCatalog && (
-          <button
-            onClick={() => {
-              if (window.confirm('¿Deseas purgar los productos de prueba y dejar solo los 24 productos oficiales?')) {
-                onResetCatalog();
-              }
-            }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(51, 65, 85, 0.5)',
-              border: '1px solid #334155',
-              color: '#94a3b8',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-            title="Limpiar base local y dejar únicamente los 24 productos oficiales"
-          >
-            <RotateCcw size={13} />
-            <span>Limpiar Catálogo</span>
-          </button>
-        )}
+        {/* Web Orders button */}
+        <button
+          onClick={onOpenWebOrders}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: webOrdersCount > 0 ? 'rgba(59, 130, 246, 0.2)' : 'rgba(51, 65, 85, 0.5)',
+            border: webOrdersCount > 0 ? '1px solid #3b82f6' : '1px solid #334155',
+            color: webOrdersCount > 0 ? '#93c5fd' : '#cbd5e1',
+            padding: '6px 12px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            position: 'relative'
+          }}
+          title="Ver pedidos enviados por clientes desde el catálogo web"
+        >
+          <Globe size={14} />
+          <span>Pedidos Web</span>
+          {webOrdersCount > 0 && (
+            <span style={{
+              background: '#ef4444',
+              color: '#ffffff',
+              fontSize: '10px',
+              fontWeight: 800,
+              padding: '1px 6px',
+              borderRadius: '10px',
+              marginLeft: '2px'
+            }}>
+              {webOrdersCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Right: Date, Time & Window Controls */}
